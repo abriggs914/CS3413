@@ -1,0 +1,117 @@
+Original List: 
+
+[ (Mary2, C, 6, 2) (Sue, D, 5, 5) (Mary, B, 2, 3) (Jim, A, 2, 5)  ]
+
+List after sorting the data: 
+[ (Mary, B, 2, 3) (Jim, A, 2, 5) (Sue, D, 5, 5) (Mary2, C, 6, 2)  ]
+
+	time: 2
+
+printing after sort
+
+[ (Mary, B, 2, 2) (Jim, A, 2, 5) (Sue, D, 5, 5) (Mary2, C, 6, 2)  ]
+
+	time: 3
+
+printing after sort
+
+[ (Mary, B, 2, 1) (Jim, A, 2, 5) (Sue, D, 5, 5) (Mary2, C, 6, 2)  ]
+
+	time: 4
+
+
+FINISHED PROCESS at t = 4: B
+IDLE
+
+printing after sort
+
+[ (Jim, A, 2, 5) (Sue, D, 5, 5) (Mary2, C, 6, 2) (Mary, B, 9999999, 0)  ]
+
+	time: 5
+
+printing after sort
+
+[ (Jim, A, 2, 4) (Sue, D, 5, 5) (Mary2, C, 6, 2) (Mary, B, 9999999, 0)  ]
+
+	time: 6
+
+printing after sort
+
+[ (Mary2, C, 6, 2) (Jim, A, 2, 3) (Sue, D, 5, 5) (Mary, B, 9999999, 0)  ]
+
+	time: 7
+
+printing after sort
+
+[ (Mary2, C, 6, 1) (Jim, A, 2, 3) (Sue, D, 5, 5) (Mary, B, 9999999, 0)  ]
+
+	time: 8
+
+
+FINISHED PROCESS at t = 8: C
+IDLE
+
+printing after sort
+
+[ (Jim, A, 2, 3) (Sue, D, 5, 5) (Mary2, C, 9999999, 0) (Mary, B, 9999999, 0)  ]
+
+	time: 9
+
+printing after sort
+
+[ (Jim, A, 2, 2) (Sue, D, 5, 5) (Mary2, C, 9999999, 0) (Mary, B, 9999999, 0)  ]
+
+	time: 10
+
+printing after sort
+
+[ (Jim, A, 2, 1) (Sue, D, 5, 5) (Mary2, C, 9999999, 0) (Mary, B, 9999999, 0)  ]
+
+	time: 11
+
+
+FINISHED PROCESS at t = 11: A
+IDLE
+
+printing after sort
+
+[ (Sue, D, 5, 5) (Jim, A, 9999999, 0) (Mary2, C, 9999999, 0) (Mary, B, 9999999, 0)  ]
+
+	time: 12
+
+printing after sort
+
+[ (Sue, D, 5, 4) (Jim, A, 9999999, 0) (Mary2, C, 9999999, 0) (Mary, B, 9999999, 0)  ]
+
+	time: 13
+
+printing after sort
+
+[ (Sue, D, 5, 3) (Jim, A, 9999999, 0) (Mary2, C, 9999999, 0) (Mary, B, 9999999, 0)  ]
+
+	time: 14
+
+printing after sort
+
+[ (Sue, D, 5, 2) (Jim, A, 9999999, 0) (Mary2, C, 9999999, 0) (Mary, B, 9999999, 0)  ]
+
+	time: 15
+
+printing after sort
+
+[ (Sue, D, 5, 1) (Jim, A, 9999999, 0) (Mary2, C, 9999999, 0) (Mary, B, 9999999, 0)  ]
+
+	time: 16
+
+
+FINISHED PROCESS at t = 16: D
+IDLE
+
+printing after sort
+
+[ (Sue, D, 9999999, 0) (Jim, A, 9999999, 0) (Mary2, C, 9999999, 0) (Mary, B, 9999999, 0)  ]
+
+[ (Sue, D, 9999999, 0) (Jim, A, 9999999, 0) (Mary2, C, 9999999, 0) (Mary, B, 9999999, 0)  ]
+
+List after sorting the data: 
+[ (Sue, D, 9999999, 0) (Jim, A, 9999999, 0) (Mary2, C, 9999999, 0) (Mary, B, 9999999, 0)  ]

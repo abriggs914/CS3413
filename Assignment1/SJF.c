@@ -160,7 +160,6 @@ void sort(int t){
 		}
 	}   
 }
-
 void sortByArrival(){
 	printf("HEY THERE\n");
 	int i, j, k, tempArrival, tempDuration, tempArrOrd, tempLPT;
@@ -172,13 +171,13 @@ void sortByArrival(){
     int size = length();
     k = size;
 	
-    for(i = 0 ; i < size - 1 ; i++, k--){
+    for(i = 0 ; i < size - 1; i++, k--){
     	current = head;
         next = head->next;
-        printf("CURRENT(%s, %c, %d, %d)\n",current->user, current->processID, current->arrivalT, current->durationT);
-        printf("\tVS\nNEXT(%s, %c, %d, %d)\n",next->user, next->processID, next->arrivalT, next->durationT);
+        //printf("CURRENT(%s, %c, %d, %d)\n",current->user, current->processID, current->arrivalT, current->durationT);
+        //printf("\tVS\nNEXT(%s, %c, %d, %d)\n",next->user, next->processID, next->arrivalT, next->durationT);
     
-        for(j = 1 ; j < k ; j++){   
+        for(j = 1 ; j < k; j++){   
         	if(current->arrivalOrder > next->arrivalOrder){
                 	tempUser = current->user;
                 	current->user = next->user;
@@ -199,13 +198,18 @@ void sortByArrival(){
 					tempArrOrd = current->arrivalOrder;
 		            current->arrivalOrder = next->arrivalOrder;
 		            next->arrivalOrder = tempArrOrd;
+		            
+		            tempLPT = current->lastOfUserProcessesFinishT;
+		        	current->lastOfUserProcessesFinishT = next->lastOfUserProcessesFinishT;
+		        	next->lastOfUserProcessesFinishT = tempLPT;
 			}
+
+        	current = current->next;
+        	next = next->next;
 		}	
-        head = current->next;
-        //next = next->next;
+        
 	}   
 }
-
 struct node * checkOtherProcess(char * userIn, char processIn){
 	//start from the first link
     struct node* current = head->next;
@@ -316,17 +320,18 @@ void main(){
     int arrival = 0;
     int duration = 0;
     int counter = 0;
-	int q = 1;
-    scanf("%s", title);
+int q = 1;
+    scanf("%[^\n]", title);
 	printf("Reading from file:\t%s\n\n", title);
     int h = scanf("%s", header);
+	//printf("headerIn:%s\n\n", header);
     while(h == 1){
     	counter++;
         scanf("%c", &space); // reading tab
     	scanf("%c", &process);
     	scanf("%d", &arrival);
     	scanf("%d", &duration);
-    	//printf("user: %s, processID: %c, arrivalT: %d, durationT: %d\n", header, process, arrival, duration);
+    	printf("user: %s, processID: %c, arrivalT: %d, durationT: %d\n", header, process, arrival, duration);
         insertFirst(header, process, arrival, duration, q);
     	//printList();
 		q++;
@@ -342,6 +347,7 @@ void main(){
 	printf("\n\tbefore processing\n");
 	printList();
     struct node * currNode = head;
+    struct node * individualFinishes;
 	printf("Time\tJob\n");
     while(currNode->durationT > -1 && p != 0 ){
     	y = processJob(&head, t);
@@ -406,16 +412,22 @@ void main(){
 	sortByArrival();
 	printf("\n\tafter arrival sorting\n");
 	printList();
+	printf("\n\n\n");
 	struct node * curr = head;
-	for(int i = 0; i < arrComp; i++){
-		for(int u = 0; u < arrComp; u++){
-			if(arr[u][0] == head->processID){
-				for(int v = 0; v < 2; v +=2){
-					printf("%s\t%d", getUserFromProcessID(arr[u][v]), arr[u][v+1]);
-				}
+	int i, j, u;
+	for(i = 0; i < q; i++){
+		for(u = 0; u < arrComp; u++){
+			printf("COMPARING%s's : %c, VS arr[%d][0]: %d, arr[%d][1]: %d, owned by %s\n", curr->user, curr->processID, u, arr[u][0], u, arr[u][1], getUserFromProcessID(arr[u][0]));
+			if(arr[u][0] == curr->processID){
+				//for(v = 0; v < 2; v +=2){
+					printf("%s\t%d", getUserFromProcessID(arr[u][0]), arr[u][1]);
+				//}
 				printf("\n");
+				i++;
+				break;
 			}
 		}
+		curr = curr->next;
 	}
 	//printf("\t%s\t%d\n", curr->user, curr->lastOfUserProcessesFinishT); //temp2
 	freeList();

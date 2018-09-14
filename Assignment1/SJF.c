@@ -23,6 +23,7 @@
 	durationT - expected process runtime
 	arrivalOrder - individual order of process arrivals
 	lastOfUserProcessesFinishT - Time at which last process owned by particular user finishes
+	usersFirstProcess - The first process that arrived for a specific user
 	next - points to the next process in line
 */
 struct node{
@@ -32,11 +33,27 @@ struct node{
     int durationT;
     int arrivalOrder;
     int lastOfUserProcessesFinishT;
+    char usersFirstProcess;
     struct node *next;
 };
 
 // start of the list
 struct node * head = NULL;
+
+char getUsersFirstProcess(char * userIn, char idIn){
+	struct node * link = head;
+	char target = idIn;
+	while(link != NULL){
+    	if(strcmp(link->user, userIn) == 0){
+    		if(link->processID < target){
+    			target = link->processID;
+    		}
+    	}
+    	link = link->next;
+    }
+    return target;
+}
+
 
 //Function prints the contents of the list in a formatted text
 void printList(){
@@ -56,6 +73,7 @@ void insertFirst(char * userIn, char processIDIn, int arrivalIn, int durationIn,
     link->arrivalT = arrivalIn;
     link->durationT = durationIn;
 	link->arrivalOrder = arrivalOrder;
+	link->usersFirstProcess = getUsersFirstProcess(link->user, processIDIn);
     link->next = head;
     head = link;
 }
@@ -354,16 +372,14 @@ int main(){
 	for(i = 0; i < arrComp-1; i++){
 		target = i;
 		for(j = i+1; j < arrComp; j++){
-			if(arr[target][0] > arr[j][0]){
+			if(arrPtr[target][0] > arrPtr[j][0]){
 				target = j;
 			}
-				swap(&arr[target][0], &arr[i][0]);
-				swap(&arr[target][1], &arr[i][1]);
-				
-				swap(&arr[target][0] ,&arrPtr[i][0]);
-				swap(&arr[target][1] ,&arrPtr[i][1]);
+
 		}
-	}	
+			swap(&arrPtr[target][0] ,&arrPtr[i][0]);
+			swap(&arrPtr[target][1] ,&arrPtr[i][1]);
+	}
 	for(i = 0; i < arrComp; i++){
 		printf("%s\t%d\n", getUserFromProcessID(arrPtr[i][0]), arrPtr[i][1]);
 	}

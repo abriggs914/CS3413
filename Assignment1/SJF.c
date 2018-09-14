@@ -23,7 +23,6 @@
 	durationT - expected process runtime
 	arrivalOrder - individual order of process arrivals
 	lastOfUserProcessesFinishT - Time at which last process owned by particular user finishes
-	usersFirstProcess - The first process that arrived for a specific user
 	next - points to the next process in line
 */
 struct node{
@@ -33,27 +32,11 @@ struct node{
     int durationT;
     int arrivalOrder;
     int lastOfUserProcessesFinishT;
-    char usersFirstProcess;
     struct node *next;
 };
 
 // start of the list
 struct node * head = NULL;
-
-char getUsersFirstProcess(char * userIn, char idIn){
-	struct node * link = head;
-	char target = idIn;
-	while(link != NULL){
-    	if(strcmp(link->user, userIn) == 0){
-    		if(link->processID < target){
-    			target = link->processID;
-    		}
-    	}
-    	link = link->next;
-    }
-    return target;
-}
-
 
 //Function prints the contents of the list in a formatted text
 void printList(){
@@ -73,7 +56,6 @@ void insertFirst(char * userIn, char processIDIn, int arrivalIn, int durationIn,
     link->arrivalT = arrivalIn;
     link->durationT = durationIn;
 	link->arrivalOrder = arrivalOrder;
-	link->usersFirstProcess = getUsersFirstProcess(link->user, processIDIn);
     link->next = head;
     head = link;
 }
@@ -254,7 +236,7 @@ struct node * checkOtherProcess(char * userIn, char processIn){
          current = current->next;
         }
     }
-		return current;  //if data found
+	return current;  //if data found
 }
 
 //Function takes in a number corresponding to an arrival time for a process.
@@ -322,7 +304,7 @@ int main(){
 	int q = 1, h;
     scanf("%[^\n]", title);
     h = scanf("%s", userIn);
-    while(h == 1){
+    while(h == 1){	// reading in processes 1 by 1 and creating list nodes
         scanf("%c", &space); // reading tab
     	scanf("%c", &process);
     	scanf("%d", &arrival);
@@ -331,21 +313,21 @@ int main(){
 		q++;
     	h = scanf("%s", userIn);
     }
-    sort(0);
+    sort(0); //in arrival order (t == 0)
    
     int t = 0, p = 1, y, arrComp = 0;
 	int arr[q][2];
     struct node * currNode = head;
 	printf("Time\tJob\n");
-    while(currNode->durationT > -1 && p != 0 ){
+    while(currNode->durationT > -1 && p != 0 ){ //simulate processing, t++ and duration--
     	y = processJob(&head, t);
         p=1;
         if(y == 1){
      		printf("%d\t%c\n", t, head->processID);
             if(head->durationT <= 0 && checkIfUserInLine(head->user) == 0){ // 0 == not in line, 1 == has a process in line
                 p = 0;
-				arr[arrComp][0] = head->processID;
-				arr[arrComp][1] = (t+1);
+				arr[arrComp][0] = head->processID;	//storing these values as a record of when a user finishes all their processes
+				arr[arrComp][1] = (t+1);			//and when they were completed. using this array for creating the second table
 				arrComp++;
             }
             sort(t+1);
@@ -353,7 +335,7 @@ int main(){
         t++;
         currNode = head;
 		if(currNode->durationT > 0){
-			p = 1;
+			p = 1;		//using p as a helper check for when something is processed, setting to 1 to continue, else quit
 		}
     }
     printf("%d\tIDLE\n", t);
@@ -362,14 +344,14 @@ int main(){
 	sortByArrival();
 	int ** arrPtr = malloc(arrComp*sizeof(int *));
 	for(i = 0; i < arrComp; i++){
-		arrPtr[i] = malloc(2*sizeof(int));
+		arrPtr[i] = malloc(2*sizeof(int));	
 	}
 	for(i = 0; i < arrComp; i++){
 		for(j = 0; j < 2; j++){
-			arrPtr[i][j] = arr[i][j];
+			arrPtr[i][j] = arr[i][j];	//copying array to sort
 		}
 	}
-	for(i = 0; i < arrComp-1; i++){
+	for(i = 0; i < arrComp-1; i++){	//selection sort algorithm to sort int array
 		target = i;
 		for(j = i+1; j < arrComp; j++){
 			if(arrPtr[target][0] > arrPtr[j][0]){
@@ -377,16 +359,16 @@ int main(){
 			}
 
 		}
-			swap(&arrPtr[target][0] ,&arrPtr[i][0]);
-			swap(&arrPtr[target][1] ,&arrPtr[i][1]);
+		swap(&arrPtr[target][0] ,&arrPtr[i][0]);
+		swap(&arrPtr[target][1] ,&arrPtr[i][1]);
 	}
 	for(i = 0; i < arrComp; i++){
 		printf("%s\t%d\n", getUserFromProcessID(arrPtr[i][0]), arrPtr[i][1]);
 	}
-	for(i = 0; i < arrComp; i++){
+	for(i = 0; i < arrComp; i++){	
 		free(arrPtr[i]);
 	}
-	free(arrPtr);
-	freeList();
+	free(arrPtr);	//freeing array in heap
+	freeList();		//freeing list pointers
 	return 0;
 }

@@ -15,6 +15,8 @@ test5 : SJF test5.txt
 	./SJF < test5.txt
 test6 : SJF test6.txt
 	./SJF < test6.txt
+test7 : SJF test7.txt
+	./SJF < test7.txt
 test1VAL : SJF test1.txt
 	valgrind ./SJF < test1.txt
 test2VAL : SJF test2.txt
@@ -27,3 +29,5 @@ test5VAL : SJF test5.txt
 	valgrind ./SJF < test5.txt
 test6VAL : SJF test6.txt
 	valgrind ./SJF < test6.txt
+test7VAL : SJF test67txt
+	valgrind ./SJF < test7.txt

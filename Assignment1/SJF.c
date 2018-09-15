@@ -319,25 +319,27 @@ int main(){
 	int arr[q][2];
     struct node * currNode = head;
 	printf("Time\tJob\n");
-    while(currNode->durationT > -1 && p != 0 ){ //simulate processing, t++ and duration--
-    	y = processJob(&head, t);
-        p=1;
-        if(y == 1){
-     		printf("%d\t%c\n", t, head->processID);
-            if(head->durationT <= 0 && checkIfUserInLine(head->user) == 0){ // 0 == not in line, 1 == has a process in line
-                p = 0;
-				arr[arrComp][0] = head->processID;	//storing these values as a record of when a user finishes all their processes
-				arr[arrComp][1] = (t+1);			//and when they were completed. using this array for creating the second table
-				arrComp++;
-            }
-            sort(t+1);
-        }
-        t++;
-        currNode = head;
-		if(currNode->durationT > 0){
-			p = 1;		//using p as a helper check for when something is processed, setting to 1 to continue, else quit
+	if(currNode != NULL){
+		while(currNode->durationT > -1 && p != 0){ //simulate processing, t++ and duration--
+			y = processJob(&head, t);
+		    p=1;
+		    if(y == 1){
+		 		printf("%d\t%c\n", t, head->processID);
+		        if(head->durationT <= 0 && checkIfUserInLine(head->user) == 0){ // 0 == not in line, 1 == has a process in line
+		            p = 0;
+					arr[arrComp][0] = head->processID;	//storing these values as a record of when a user finishes all their processes
+					arr[arrComp][1] = (t+1);			//and when they were completed. using this array for creating the second table
+					arrComp++;
+		        }
+		        sort(t+1);
+		    }
+		    t++;
+		    currNode = head;
+			if(currNode->durationT > 0){
+				p = 1;		//using p as a helper check for when something is processed, setting to 1 to continue, else quit
+			}
 		}
-    }
+	}
     printf("%d\tIDLE\n", t);
 	printf("\nSummary:\n");
 	int i, j, target;

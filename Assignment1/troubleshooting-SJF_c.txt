@@ -1,0 +1,25 @@
+/*
+*	Troubleshooting guide for
+*	SJF.c program
+*	Avery Briggs
+*	3471065
+*	Sept. 2018
+*/
+
+	This is a troubleshooting guide to SJF.c program should it fail.
+	
+Input:
+	The program is designed to read the input via stdIn methods (scanf).
+	The input should have a header title at the top of the text file.
+	
+	I have included functionality for an empty list of processes on input. The program
+	simply prints empty tables.
+	
+	Also the order of users and their jobs is important for the sorting
+	of their arrival times for the summary table.
+	
+Table 2 Summary:	
+	The assumption is that, for each user, when they create a process, that 
+	processes id is in sequence with all of the user's process. (ie. in the
+	example, Mary had processes B and C, despite Sue arriving before Mary's
+	C could have).

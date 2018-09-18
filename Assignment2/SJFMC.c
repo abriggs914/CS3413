@@ -141,13 +141,13 @@ void sort(int t){
     	current = head;
         next = head->next;    
         for(j = 1 ; j < k ; j++){
-        	printf("current: \n");
+        	printf("\tt: %d \tcurrent: \n",t);
         	printProcessNode(current);   
-        	printf("\nnext: \n");   
+        	printf("\n\tt: %d \tnext: \n",t);   
         	printProcessNode(next);   
         	printf("\n");   
         	if(current->arrivalT <= t && next->arrivalT <= t){
-            	if(current->durationT > next->durationT || current->processed == 1){
+            	if(current->durationT > next->durationT){
                  	//swap user
                 	tempUser = current->user;
                 	current->user = next->user;
@@ -382,32 +382,37 @@ int main(int argc, char ** argv){
     	h = scanf("%s", userIn);
     }
     sort(0); //in arrival order (t == 0)
+    printf("\n\tprinting initially:\n");
+    printList();
    
-    int t = 0, p = 1, y, arrComp = 0;
+    int t = 0, p = 1, y, arrComp = 0, w;
 	int arr[q][2];
     struct node * currNode = head;
 	printf("Time\tJob\n");
 	if(currNode != NULL){
-		while(currNode->durationT > -1 && p != 0){ //simulate processing, t++ and duration--
-			y = processJob(&head, t);
-		    p=1;
-		    if(y == 1){
-		 		printf("%d\t%c\n", t, head->processID);
-		        if(head->durationT <= 0 && checkIfUserInLine(head->user) == 0){ // 0 == not in line, 1 == has a process in line
-		            p = 0;
-					arr[arrComp][0] = head->processID;	//storing these values as a record of when a user finishes all their processes
-					arr[arrComp][1] = (t+1);			//and when they were completed. using this array for creating the second table
-					arrComp++;
-		        }
-		        sort(t+1);
-		        printf("\nPrinting after sort:\n");
-		        printList();
-		        printf("\n\n");
-		    }
-		    t++;
-		    currNode = head;
-			if(currNode->durationT > 0){
-				p = 1;		//using p as a helper check for when something is processed, setting to 1 to continue, else quit
+		for(w = 0; w < numCPUs; w++){
+				while(currNode->durationT > -1 && p != 0){ //simulate processing, t++ and duration--
+					y = processJob(&head, t);
+					p=1;
+					if(y == 1){
+				 		printf("%d\t%c\n", t, head->processID);
+						if(head->durationT <= 0 && checkIfUserInLine(head->user) == 0){ // 0 == not in line, 1 == has a process in line
+						    p = 0;
+							arr[arrComp][0] = head->processID;	//storing these values as a record of when a user finishes all their processes
+							arr[arrComp][1] = (t+1);			//and when they were completed. using this array for creating the second table
+							arrComp++;
+						}
+						sort(t+1);
+						printf("\nPrinting after sort:\n");
+						printList();
+						printf("\n\n");
+					}
+					t++;
+					currNode = head;
+					if(currNode->durationT > 0){
+						p = 1;		//using p as a helper check for when something is processed, setting to 1 to continue, else quit
+					}
+				}
 			}
 		}
 	}

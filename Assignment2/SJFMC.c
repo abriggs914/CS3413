@@ -15,6 +15,10 @@
 #include <string.h>
 #include <stdlib.h>
 
+typedef int bool;
+#define true 1
+#define false 0
+
 /*
 	Process struct
 	user - user name
@@ -39,6 +43,7 @@ struct node{
 struct nodeCPU{
 	char currProcessID;
 	int cpuID;
+	bool inUse;
     struct nodeCPU * next;
 };
 
@@ -341,6 +346,7 @@ void initCPU(int cpuID){
     struct nodeCPU * link = (struct nodeCPU *) malloc(sizeof(struct nodeCPU));
     link->cpuID = cpuID;
     link->next = headCPU;
+    link->inUse = false;
     headCPU = link;
     printf("Initialized CPU%d\n", link->cpuID);
 }

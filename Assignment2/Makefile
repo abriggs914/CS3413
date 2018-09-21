@@ -3,6 +3,8 @@ CFLAGS = -g -Wall -Wshadow
 
 SJFMC : SJFMC.c
 	$(CC) SJFMC.c -o SJFMC $(CFLAGS)
+MCSJF : MCSJF.c
+	$(CC) MCSJF.c -o MCSJF $(CFLAGS)
 test1 : SJFMC test1.txt
 	./SJFMC 1 < test1.txt
 test2 : SJFMC test2.txt
@@ -35,3 +37,9 @@ test7VAL : SJFMC test7txt
 	valgrind ./SJFMC < test7.txt
 test8VAL : SJFMC test8txt
 	valgrind ./SJFMC < test8.txt
+testMC1 : MCSJF test1.txt
+	./MCSJF 1 < test1.txt
+testMC2 : MCSJF test2.txt
+	./MCSJF 2 < test2.txt
+testMC3 : MCSJF test3.txt
+	./MCSJF 3 < test3.txt

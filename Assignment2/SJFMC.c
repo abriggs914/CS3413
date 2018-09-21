@@ -5,7 +5,7 @@
 *	a SJF (shortest job first) algorithm for
 *	selecting a process to pass to the CPU.
 *	
-*	CS3413 Assignment 1
+*	CS3413 Assignment 2
 *	Sept 2018
 *	Avery Briggs
 *	3471065

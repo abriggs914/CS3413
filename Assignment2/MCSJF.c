@@ -49,11 +49,20 @@ struct nodeCPU{
 
 // start of the list
 struct node * head = NULL;
+struct node * finishedProcesses = NULL;
 struct nodeCPU * headCPU = NULL;
 
 //Function prints the contents of the list in a formatted text
 void printList(){
    struct node * ptr = head;
+   while(ptr != NULL){
+      printf("\t%s, %c, AT:%d, DT:%d, AO:%d, LP:%d, PD?:%d\n",ptr->user, ptr->processID, ptr->arrivalT, ptr->durationT, ptr->arrivalOrder, ptr->lastOfUserProcessesFinishT, ptr->processed);
+      ptr = ptr->next;
+   }
+}
+
+void printFinishedList(){
+   struct node * ptr = finishedProcesses;
    while(ptr != NULL){
       printf("\t%s, %c, AT:%d, DT:%d, AO:%d, LP:%d, PD?:%d\n",ptr->user, ptr->processID, ptr->arrivalT, ptr->durationT, ptr->arrivalOrder, ptr->lastOfUserProcessesFinishT, ptr->processed);
       ptr = ptr->next;
@@ -76,6 +85,20 @@ void insertFirst(char * userIn, char processIDIn, int arrivalIn, int durationIn,
 	link->processed = 0;
     link->next = head;
     head = link;
+}
+
+void insertFinishedProcess(char * userIn, char processIDIn, int arrivalIn, int durationIn, int arrivalOrder, int processedIn, int lastOfUserProcessesFinishIn){
+    struct node * link = (struct node *) malloc(sizeof(struct node));
+    link->user = malloc(20*sizeof(char));
+    strcpy(link->user, userIn);
+    link->processID = processIDIn;
+    link->arrivalT = arrivalIn;
+    link->durationT = durationIn;
+	link->arrivalOrder = arrivalOrder;
+	link->processed = processedIn;
+    link->next = finishedProcesses;
+    link->lastOfUserProcessesFinishT = lastOfUserProcessesFinishIn;
+    finishedProcesses = link;
 }
 
 // Function is called to free the list in heap
@@ -176,19 +199,19 @@ void sort(int t){
     k = size;	
     for(i = 0 ; i < size - 1 ; i++, k--){
     	current = head;
-        next = head->next;    
+        next = head->next;
         for(j = 1 ; j < k ; j++){
-        	printf("\tt: %d \tcurrent: \n",t);
-        	printProcessNode(current);   
-        	printf("\n\tt: %d \tnext: \n",t);   
-        	printProcessNode(next);   
-        	printf("\n");   
+        	//printf("\tt: %d \tcurrent: \n",t);
+        	//printProcessNode(current);   
+        	//printf("\n\tt: %d \tnext: \n",t);   
+        	//printProcessNode(next);   
+        	//printf("\n");   
         	if(current->arrivalT <= t && next->arrivalT <= t){
             	if(current->durationT > next->durationT){
         			swapProcesses(current, next);
         		}
 			}
-         	else if(((current->arrivalT > next->arrivalT) && next->processed == 0) || current->processed == 1){
+         	else if(((current->arrivalT > next->arrivalT) && next->processed == 0)){
         		swapProcesses(current, next);
 			}
          	current = current->next;
@@ -196,6 +219,13 @@ void sort(int t){
 		}
 	}   
 }
+
+void deleteFirst(){
+   struct node * link = head;
+   head = head->next;
+   free(link); 
+}
+
 void sortByArrival(){
 	int i, j, k;//, tempArrival, tempDuration, tempArrOrd, tempLPT, tempPCD;
  	//char tempProcess;
@@ -276,17 +306,25 @@ void updateRestOfUserProcesses(char * userIn, int n){
 
 //Function simulates a CPU cycle, decreasing the duration left on
 //a current process by 1.
-int processJob(struct node ** nodeIn, int t){
-	struct node * currentlyExecuting = * nodeIn;
+int processJob(struct node * nodeIn, struct nodeCPU * cpuIn, int t, int numCPUs, int ref){
+	struct node * currentlyExecuting = nodeIn;
+	printProcessNode(currentlyExecuting);
     if(currentlyExecuting->arrivalT <= t){
 		if(currentlyExecuting->durationT > 0){
 		    currentlyExecuting->durationT--;
+		    cpuIn->currProcessID = currentlyExecuting->processID;
+		    cpuIn->inUse = true;
+		    printf("%c\t%d\t",currentlyExecuting->processID, t);
 		    if(currentlyExecuting->durationT == 0){
 		        currentlyExecuting->processed = 1;  //using this as a check for when process is finished.
 		    	currentlyExecuting->lastOfUserProcessesFinishT = t+1;
 		    	updateRestOfUserProcesses(currentlyExecuting->user, (t+1));
+		    	insertFinishedProcess(currentlyExecuting->user, currentlyExecuting->processID, currentlyExecuting->arrivalT, currentlyExecuting->durationT, currentlyExecuting->arrivalOrder, currentlyExecuting->processed, currentlyExecuting->lastOfUserProcessesFinishT);
 		    }
-		    *nodeIn = currentlyExecuting;
+		    nodeIn = currentlyExecuting;
+		    /*if(nodeIn->next->processed == 0 && ref < numCPUs){
+		    	processJob(nodeIn->next, cpuIn->next, t, numCPUs, ref+1);
+		    }*/
 		    return 1;
 		}
     }
@@ -343,19 +381,39 @@ int main(int argc, char ** argv){
     struct node * currNode = head;
     struct nodeCPU * currCPUNode = headCPU;
 	printf("Time\tJob\n");
-	int i, j, k;
-	if(currNode != NULL){
-		processJob(head, headCPU);  //redefine processJob with structs.
-		while(k < numCPUs){
+	int i, j, k, t = 0;
+	i = 100;
+	j = -110;
+	i = i-j;
+	while(head != NULL && currNode->durationT > 0){
+		//printProcessNode(currNode);
+		processJob(head, headCPU, t+1, numCPUs, 0);  //redefine processJob with structs.
+		printf("\n");
+		/*while(k < numCPUs){
 			if(currNode->next != NULL){
 				currNode = currNode->next;
 				currCPUNode = currCPUNode->next;
-				processJob(currNode, currCPUNode);
+				processJob(currNode, currCPUNode, t+1, numCPUs, 0);
+				printf("\n");
 			}
 			k++;
+		}*/
+		sort(t+1);
+		currNode = head;
+		if(head->processed == 1){
+			deleteFirst();
+			currNode = head;
 		}
-		headCPU = headCPU;
+		printf("\n\t\tgot here in main\n");
+		printList();
+		printf("\t\tmain\n");
+		t++;
+		//headCPU = headCPU;
 	}
+	printf("\nAfter processing loop\n\n");
+	printList();
+	printf("\n\n\n");
+	printFinishedList();
    /*
     int t = 0, p = 1, y, arrComp = 0, w;
 	int arr[q][2];

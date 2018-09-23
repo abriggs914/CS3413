@@ -44,7 +44,8 @@ struct node{
 
 struct node * head = NULL; // start of the queue list.
 struct node * withCPU = NULL; // start of the place holder list.
-struct node * finishedProcesses = NULL; // start of the finished list.
+struct node * finishedProcesses = NULL; // start of the finished
+struct node * endFinal = NULL; // start of the queue list. list.
 
 //Function prints the contents of the list in a formatted text
 void printList(struct node * headIn){
@@ -222,58 +223,6 @@ void sortFinishedProcesses(){
 	}   
 }
 
-// Function deletes a processNode from the
-// finishedProcesses list.
-// Deletes the node with the matching ID.
-struct node * delete(char idIn){
-   struct node * current = finishedProcesses;
-   struct node * previous = NULL;
-   if(finishedProcesses == NULL){
-      return NULL;
-   }
-   while(current->processID != idIn){
-      if(current->next == NULL){
-         return NULL;
-      }
-      else{
-         previous = current;
-         current = current->next;
-      }
-   }
-   if(current == finishedProcesses){
-      finishedProcesses = finishedProcesses->next;
-   }
-   else{
-      previous->next = current->next;
-   }    
-   return current;
-}
-
-
-// Function removes all duplicate
-// process users.
-// This will leave the finishedProcesses
-// list with only the earliest process
-// by that user. 
-// One process per user.
-void reduceFinishedProcesses(){
-	int i, j, k;
-    struct node * current;
-    struct node * next;	
-    int size = length(finishedProcesses);
-    k = size;	
-    for(i = 0 ; i < size - 1 ; i++, k--){
-    	current = finishedProcesses;
-        next = finishedProcesses->next;
-        for(j = 1 ; j < k ; j++){
-        	if(strcmp(current->user, next->user) == 0){
-        		delete(current->processID);
-			}
-         	current = current->next;
-        	next = next->next;
-		}
-	}   
-}
 
 // Function deletes the first
 // procesNode from the list.
@@ -390,13 +339,20 @@ int main(int argc, char ** argv){
 	}
 	printf("%d\tIDLE\n", (t+1));
 	sortFinishedProcesses(); // finishedProcesses in order of processID
-	reduceFinishedProcesses(); // One process per user in list
-	//printList(finishedProcesses);
+	printList(finishedProcesses);
 	temp = finishedProcesses;
 	printf("\nSummary:\n");
-	while(temp != NULL){
-		printf("%s\t%d\n", temp->user, temp->lastOfUserProcessesFinishT);
-		temp = temp->next;
+	for(i = 0; i < (t+2); i++){
+		temp = finishedProcesses;
+		while(temp != NULL){
+			if(temp->lastOfUserProcessesFinishT == i){
+				printf("%s\t%d\n", temp->user, temp->lastOfUserProcessesFinishT);
+				break;
+			}
+			else{
+				temp = temp->next;
+			}
+		}
 	}
 	return EXIT_SUCCESS;
 }

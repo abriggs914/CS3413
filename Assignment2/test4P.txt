@@ -1,0 +1,6 @@
+User Process Arrival Duration
+Jim	B	2	5	4
+Mary	C	2	3	4
+Sue	E	5	5	1
+Mary	D	6	2	1
+Avery	A	1	1	2

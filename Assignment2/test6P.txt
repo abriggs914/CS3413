@@ -1,0 +1,22 @@
+User Process Arrival Duration
+Jim	N	2	5	6
+Mary	T	2	3	5
+Avery	B	4	4	5
+Sue	L	5	5	1
+Mary	S	6	2	1
+Avery	C	4	4	5
+Jim	M	7	7	2
+Jim	P	2	3	3
+Jim	O	3	5	4
+Mary	R	2	3	1
+Avery	D	4	4	2
+Sue	K	1	5	10
+Avery	E	4	4	9
+Jim	Q	4	5	6
+Mary	U	6	2	7
+Sue	J	4	1	6
+Sue	I	5	6	1
+Avery	A	1	200	2
+Avery	F	4	4	2
+Avery	G	4	4	5
+Avery	H	4	4	5

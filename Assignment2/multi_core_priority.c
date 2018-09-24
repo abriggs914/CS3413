@@ -39,6 +39,7 @@ struct node{
     int durationT;
     int arrivalOrder;
     int lastOfUserProcessesFinishT;
+	int priorityL;
     struct node * next;
 };
 
@@ -51,18 +52,18 @@ struct node * endFinal = NULL; // start of the queue list. list.
 void printList(struct node * headIn){
    struct node * ptr = headIn;
    while(ptr != NULL){
-      printf("\t%s, %c, AT:%d, DT:%d, AO:%d, LP:%d\n",ptr->user, ptr->processID, ptr->arrivalT, ptr->durationT, ptr->arrivalOrder, ptr->lastOfUserProcessesFinishT);
+      printf("\t%s, %c, AT:%d, DT:%d, AO:%d, LP:%d, PL: %d\n",ptr->user, ptr->processID, ptr->arrivalT, ptr->durationT, ptr->arrivalOrder, ptr->lastOfUserProcessesFinishT, ptr->priorityL);
       ptr = ptr->next;
    }
 }
 
 // Function prints the attributes of a processNode.
 void printProcessNode(struct node * ptr){
-      printf("\t%s, %c, AT:%d, DT:%d, AO:%d, LP:%d\n",ptr->user, ptr->processID, ptr->arrivalT, ptr->durationT, ptr->arrivalOrder, ptr->lastOfUserProcessesFinishT);
+      printf("\t%s, %c, AT:%d, DT:%d, AO:%d, LP:%d, PL: %d\n",ptr->user, ptr->processID, ptr->arrivalT, ptr->durationT, ptr->arrivalOrder, ptr->lastOfUserProcessesFinishT, ptr->priorityL);
 }
 
 //inserts a link at the first of the list given process parameters
-void insertFirst(char * userIn, char processIDIn, int arrivalIn, int durationIn, int arrivalOrder){
+void insertFirst(char * userIn, char processIDIn, int arrivalIn, int durationIn, int arrivalOrder, int priorityIn){
     struct node * link = (struct node *) malloc(sizeof(struct node));
     link->user = malloc(20*sizeof(char));
     strcpy(link->user, userIn);
@@ -70,6 +71,7 @@ void insertFirst(char * userIn, char processIDIn, int arrivalIn, int durationIn,
     link->arrivalT = arrivalIn;
     link->durationT = durationIn;
 	link->arrivalOrder = arrivalOrder;
+	link->priorityL = priorityIn;
     link->next = head;
     head = link;
 }
@@ -89,6 +91,7 @@ void insertFirstNode(struct node * nodeIn){
     link->durationT = nodeIn->durationT;
 	link->arrivalOrder = nodeIn->arrivalOrder;
 	link->lastOfUserProcessesFinishT = nodeIn->lastOfUserProcessesFinishT;
+	link->priorityL = nodeIn->priorityL;
     link->next = head;
     head = link;
 }
@@ -107,6 +110,7 @@ void insertFirstNodeCPU(struct node * nodeIn){
     link->durationT = nodeIn->durationT;
 	link->arrivalOrder = nodeIn->arrivalOrder;
 	link->lastOfUserProcessesFinishT = nodeIn->lastOfUserProcessesFinishT;
+	link->priorityL = nodeIn->priorityL;
     link->next = withCPU;
     withCPU = link;
 }
@@ -126,6 +130,7 @@ void insertFinishedNode(struct node * nodeIn, int LPFT){
     link->durationT = nodeIn->durationT;
 	link->arrivalOrder = nodeIn->arrivalOrder;
 	link->lastOfUserProcessesFinishT = LPFT;
+	link->priorityL = nodeIn->priorityL;
     link->next = finishedProcesses;
     finishedProcesses = link;
 }
@@ -133,7 +138,7 @@ void insertFinishedNode(struct node * nodeIn, int LPFT){
 // Function swaps processNodes attributes.
 // Called from the sort() function.
 void swapProcesses(struct node * current, struct node * next){
-	int tempArrival, tempDuration, tempArrOrd, tempLPT;
+	int tempArrival, tempDuration, tempArrOrd, tempLPT, tempPLV;
  	char tempProcess;
     char * tempUser;
 	//swap user
@@ -160,6 +165,10 @@ void swapProcesses(struct node * current, struct node * next){
 	tempLPT = current->lastOfUserProcessesFinishT;
 	current->lastOfUserProcessesFinishT = next->lastOfUserProcessesFinishT;
 	next->lastOfUserProcessesFinishT = tempLPT;
+	//swap priorityL
+	tempPLV = current->priorityL;
+	current->priorityL = next->priorityL;
+	next->priorityL = tempPLV;
 }
 
 // Function calculates and returns the length of a given list
@@ -188,7 +197,10 @@ void sort(int t){
         next = head->next;
         for(j = 1 ; j < k ; j++){
         	if(current->arrivalT <= t && next->arrivalT <= t){
-            	if(current->durationT > next->durationT){
+		        if(current->priorityL > next->priorityL){
+					swapProcesses(current, next);
+				}
+				else if(current->durationT > next->durationT && current->priorityL < next->priorityL){
         			swapProcesses(current, next);
         		}
 			}
@@ -257,9 +269,10 @@ void updateUserFinishTime(struct node * temp, int t){
 		}
 		link = link->next;
 	}
-}
+} 
 
 int main(int argc, char ** argv){
+    printf("hey there\n");
     int h, q = 1;
     int numCPUs;
     numCPUs = atoi(*(argv+1));  // read in from command line
@@ -271,6 +284,7 @@ int main(int argc, char ** argv){
     char space;
     int arrival;
     int duration;
+	int priority;
     scanf("%[^\n]", title);
     h = scanf("%s", userIn);
     while(h == 1){	// reading in processes 1 by 1 and creating list nodes
@@ -278,7 +292,8 @@ int main(int argc, char ** argv){
     	scanf("%c", &process);
     	scanf("%d", &arrival);
     	scanf("%d", &duration);
-        insertFirst(userIn, process, arrival, duration, q);
+    	scanf("%d", &priority);
+        insertFirst(userIn, process, arrival, duration, q, priority);
 		q++;
     	h = scanf("%s", userIn);
     }
@@ -339,7 +354,7 @@ int main(int argc, char ** argv){
 	}
 	printf("%d\tIDLE\n", (t+1));
 	sortFinishedProcesses(); // finishedProcesses in order of processID
-	printList(finishedProcesses);
+	//printList(finishedProcesses);
 	temp = finishedProcesses;
 	printf("\nSummary:\n");
 	for(i = 0; i < (t+2); i++){

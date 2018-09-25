@@ -1,0 +1,8 @@
+CC = gcc
+CFLAGS = -g -Wall -Wshadow
+
+pthreads_lab : pthreads_lab.c
+	$(CC) pthreads_lab.c -o pthreads_lab $(CFLAGS) -lpthread
+
+
+

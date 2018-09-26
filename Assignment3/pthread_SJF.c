@@ -19,6 +19,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <pthread.h>
+#include <unistd.h>
 
 typedef int bool;
 #define true 1
@@ -47,6 +48,8 @@ struct node{
 struct node * head = NULL; // start of the queue list.
 struct node * withCPU = NULL; // start of the place holder list.
 struct node * finishedProcesses = NULL; // start of the finished
+
+pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 
 //Function prints the contents of the list in a formatted text
 void printList(struct node * headIn){
@@ -271,6 +274,24 @@ void updateUserFinishTime(struct node * temp, int t){
 	}
 }
 
+void * foo(){	
+	printf("\tpthread ID (FOO): %d\n\n", getpid());
+	pthread_exit(0);
+}
+
+void * processJob(void * arg){
+	struct node * temp = (struct node *) arg;
+	//int num = *((int *) arg);
+	//printf("num: %d\n", num);
+	//printf("User name: %s\n", ((struct node *)arg)->user);
+	pthread_mutex_lock(&mutex);
+	printProcessNode(temp);
+	//num--;
+	pthread_mutex_unlock(&mutex);
+	foo();
+	pthread_exit(0);
+}
+
 int main(int argc, char ** argv){
     int h, q = 1;
     int numCPUs;
@@ -333,6 +354,7 @@ int main(int argc, char ** argv){
 			k++;
 		}
 		////////////////////////////////////////////////////
+		
 		printf("\n");
 		k = 0;
 		if(adjust){
@@ -350,6 +372,21 @@ int main(int argc, char ** argv){
 		if(head == NULL){
 			processList = false;
 		}
+		////////////////////////////////////////////////////
+		if(processList){ 
+			struct node * list = malloc(length(head)*sizeof(struct node *));
+			list->processID = head->processID;
+			list->arrivalT = head->arrivalT;
+			list->durationT = head->durationT;
+			pthread_t pid = malloc(sizeof(pthread_t));
+			pthread_create(&pid, NULL, &processJob, &list);
+			printf("\tpthread ID (MAIN): %ld\n", pid);
+			printProcessNode(head);
+			printf("\t\tVS.\n");
+			pthread_join(pid, NULL);
+		}
+		//not sure why this isnt working right now.
+		////////////////////////////////////////////////////
 	}
 	printf("%d\tIDLE\n", (t+1));
 	sortFinishedProcesses(); // finishedProcesses in order of processID
@@ -365,7 +402,6 @@ int main(int argc, char ** argv){
 			i--;
 		}
 		if(temp == NULL){
-			i = 0;
 			break;
 		}
 		j = temp->lastOfUserProcessesFinishT; 

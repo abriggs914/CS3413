@@ -285,6 +285,7 @@ void * processJob(void * arg){
 	//printf("num: %d\n", num);
 	//printf("User name: %s\n", ((struct node *)arg)->user);
 	pthread_mutex_lock(&mutex);
+	temp->durationT--;
 	printProcessNode(temp);
 	//num--;
 	pthread_mutex_unlock(&mutex);
@@ -339,7 +340,7 @@ int main(int argc, char ** argv){
 				j = head->durationT-1;
 				head->durationT = j;
 				printf("%c\t", head->processID);
-				if(head->durationT == 0){ //process is done
+				if(head->durationT <= 0){ //process is done
 					temp = deleteFirst();
 					updateUserFinishTime(temp, t+1);
 					insertFinishedNode(temp, t+1);
@@ -375,17 +376,18 @@ int main(int argc, char ** argv){
 		////////////////////////////////////////////////////
 		if(processList){ 
 			struct node * list = malloc(length(head)*sizeof(struct node *));
-			list->processID = head->processID;
-			list->arrivalT = head->arrivalT;
-			list->durationT = head->durationT;
-			pthread_t pid = malloc(sizeof(pthread_t));
-			pthread_create(&pid, NULL, &processJob, &list);
+			//list->processID = head->processID;
+			//list->arrivalT = head->arrivalT;
+			//list->durationT = head->durationT;
+			list = head;
+			pthread_t pid = (malloc(sizeof(pthread_t)));
+			pthread_create(&pid, NULL, &processJob, list);
 			printf("\tpthread ID (MAIN): %ld\n", pid);
 			printProcessNode(head);
 			printf("\t\tVS.\n");
 			pthread_join(pid, NULL);
 		}
-		//not sure why this isnt working right now.
+		//need to implement this for multiple concurrent processes.
 		////////////////////////////////////////////////////
 	}
 	printf("%d\tIDLE\n", (t+1));

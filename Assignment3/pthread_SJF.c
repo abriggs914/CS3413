@@ -376,16 +376,13 @@ int main(int argc, char ** argv){
 		////////////////////////////////////////////////////
 		if(processList){ 
 			struct node * list = malloc(length(head)*sizeof(struct node *));
-			//list->processID = head->processID;
-			//list->arrivalT = head->arrivalT;
-			//list->durationT = head->durationT;
 			list = head;
-			pthread_t pid = (malloc(sizeof(pthread_t)));
-			pthread_create(&pid, NULL, &processJob, list);
-			printf("\tpthread ID (MAIN): %ld\n", pid);
+			pthread_t * pid = (malloc(sizeof(pthread_t)));
+			pthread_create(pid, NULL, &processJob, list);
+			printf("\tpthread ID (MAIN): %ld\n", *pid);
 			printProcessNode(head);
 			printf("\t\tVS.\n");
-			pthread_join(pid, NULL);
+			pthread_join(*pid, NULL);
 		}
 		//need to implement this for multiple concurrent processes.
 		////////////////////////////////////////////////////

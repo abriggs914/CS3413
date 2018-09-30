@@ -61,13 +61,12 @@ void printList(struct node * headIn){
 }
 
 void wereFree(struct node * headIn){
-	struct node * temp1 = headIn;
-	struct node * temp2;	
-	while(temp1 != NULL){
-		temp2 = temp1;
-		free(temp1->user);
-		free(temp1);
-		temp1 = temp2->next;
+	struct node * temp;
+	while(headIn != NULL){
+		temp = headIn->next;
+		free(headIn->user);
+		free(headIn);
+		headIn = temp;
 	}
 }
 
@@ -96,7 +95,6 @@ void insertFirst(char * userIn, char processIDIn, int arrivalIn, int durationIn,
 // Function is only called when a process comes
 // back from CPU and still has a durationT > 0.
 void insertFirstNode(struct node * nodeIn){
-	//printf("insertFirstNode: %c\n", nodeIn->processID);
 	struct node * link = (struct node *) malloc(sizeof(struct node));
     link->user = nodeIn->user;
     link->processID = nodeIn->processID;
@@ -113,10 +111,8 @@ void insertFirstNode(struct node * nodeIn){
 // This list is a place holder for when a 
 // processes is with a CPU.
 void insertFirstNodeCPU(struct node * nodeIn){
-	//printf("insertFirstNodeCPU: %c\n", nodeIn->processID);
 	struct node * link = (struct node *) malloc(sizeof(struct node));
     link->user = nodeIn->user;
-    //printf("made it here\n");
     link->processID = nodeIn->processID;
     link->arrivalT = nodeIn->arrivalT;
     link->durationT = nodeIn->durationT;
@@ -132,10 +128,8 @@ void insertFirstNodeCPU(struct node * nodeIn){
 // processing and will be removed from the queue
 // permanently.
 void insertFinishedNode(struct node * nodeIn, int LPFT){
-	//printf("insertFirstNodeCPU: %c\n", nodeIn->processID);
 	struct node * link = (struct node *) malloc(sizeof(struct node));
     link->user = nodeIn->user;
-    //printf("made it here\n");
     link->processID = nodeIn->processID;
     link->arrivalT = nodeIn->arrivalT;
     link->durationT = nodeIn->durationT;
@@ -195,7 +189,10 @@ int length(struct node * headIn){
 void sort(int t){
 	int i, j, k;
     struct node * current;
-    struct node * next;	
+    struct node * next;
+    if(head == NULL){
+    	return;
+    }	
     int size = length(head);
     k = size;	
     for(i = 0 ; i < size - 1 ; i++, k--){
@@ -213,7 +210,7 @@ void sort(int t){
          	current = current->next;
         	next = next->next;
 		}
-	}  
+	}   
 }
 // Function is called to arrange 
 // finishedProcesses list by processID.
@@ -235,7 +232,7 @@ void sortFinishedProcesses(){
          	current = current->next;
         	next = next->next;
 		}
-	}   
+	}
 }
 
 
@@ -274,22 +271,15 @@ void updateUserFinishTime(struct node * temp, int t){
 	}
 }
 
-void * foo(){	
-	printf("\tpthread ID (FOO): %d\n\n", getpid());
-	pthread_exit(0);
-}
-
+// Function is called to simulate a CPU cycle
+// function is only called by the pthreads
 void * processJob(void * arg){
 	struct node * temp = (struct node *) arg;
-	//int num = *((int *) arg);
-	//printf("num: %d\n", num);
-	//printf("User name: %s\n", ((struct node *)arg)->user);
 	pthread_mutex_lock(&mutex);
 	temp->durationT--;
-	printProcessNode(temp);
-	//num--;
+	//printProcessNode(temp);
 	pthread_mutex_unlock(&mutex);
-	foo();
+	sleep(1);
 	pthread_exit(0);
 }
 
@@ -297,9 +287,7 @@ int main(int argc, char ** argv){
     int h, q = 1;
     int numCPUs;
     numCPUs = atoi(*(argv+1));  // read in from command line
-    //printf("number of CPUs available entered: \n\t%d\n\nargv: %s\targc: %d, argv[1][0]: %s\n\n", numCPUs, *argv, argc, *(argv+1));
-    
-	char title[100];
+	char title[150];
     char userIn[25];
     char process;
     char space;
@@ -317,8 +305,6 @@ int main(int argc, char ** argv){
     	h = scanf("%s", userIn);
     }
     sort(0); //in arrival order (t == 0)
-    //printf("\n\tprinting initially:\n");
-    //printList(head);
     int i, j, k = 0, t = 0;
     bool processList = (numCPUs > 0 && head != NULL);
 	printf("Time\t");
@@ -331,14 +317,18 @@ int main(int argc, char ** argv){
 	while(processList){	//list is not null and at least one processor available
 		t++;
 		temp = head;
-		//////////////////////////////////////////////
 		while(k < numCPUs && head != NULL){ //one t up to numCPUs being processed at once
 			if(head->arrivalT <= t){
 				if(k == 0){
 					printf("%d\t", t);
 				}
-				j = head->durationT-1;
-				head->durationT = j;
+				
+				struct node * list = malloc(length(head)*sizeof(struct node *));
+				list = head;
+				pthread_t * pid = (malloc(sizeof(pthread_t)));
+				pthread_create(pid, NULL, &processJob, list);
+				pthread_join(*pid, NULL);
+				j = head->durationT;
 				printf("%c\t", head->processID);
 				if(head->durationT <= 0){ //process is done
 					temp = deleteFirst();
@@ -354,8 +344,6 @@ int main(int argc, char ** argv){
 			}
 			k++;
 		}
-		////////////////////////////////////////////////////
-		
 		printf("\n");
 		k = 0;
 		if(adjust){
@@ -373,23 +361,9 @@ int main(int argc, char ** argv){
 		if(head == NULL){
 			processList = false;
 		}
-		////////////////////////////////////////////////////
-		if(processList){ 
-			struct node * list = malloc(length(head)*sizeof(struct node *));
-			list = head;
-			pthread_t * pid = (malloc(sizeof(pthread_t)));
-			pthread_create(pid, NULL, &processJob, list);
-			printf("\tpthread ID (MAIN): %ld\n", *pid);
-			printProcessNode(head);
-			printf("\t\tVS.\n");
-			pthread_join(*pid, NULL);
-		}
-		//need to implement this for multiple concurrent processes.
-		////////////////////////////////////////////////////
 	}
 	printf("%d\tIDLE\n", (t+1));
 	sortFinishedProcesses(); // finishedProcesses in order of processID
-	//printList(finishedProcesses);
 	temp = finishedProcesses;
 	printf("\nSummary:\n");
 	i = length(finishedProcesses);
@@ -405,19 +379,6 @@ int main(int argc, char ** argv){
 		}
 		j = temp->lastOfUserProcessesFinishT; 
 	}
-	/*
-	for(i = 0; i < (t+2); i++){
-		temp = finishedProcesses;
-		while(temp != NULL){
-			if(temp->lastOfUserProcessesFinishT == i){
-				printf("%s\t%d\n", temp->user, temp->lastOfUserProcessesFinishT);
-				break;
-			}
-			else{
-				temp = temp->next;
-			}
-		}
-	}*/
 	free(temp);
 	wereFree(head);
 	wereFree(withCPU);

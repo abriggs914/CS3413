@@ -4,6 +4,9 @@ CFLAGS = -g -Wall -Wshadow -lpthread
 pthread_SJF : pthread_SJF.c
 	$(CC) pthread_SJF.c -o pthread_SJF $(CFLAGS)
 
+pthreads : pthreads.c
+	$(CC) pthreads.c -o pthreads $(CFLAGS)
+
 test1 : pthread_SJF test1.txt
 	./pthread_SJF 1 < test1.txt
 
@@ -50,4 +53,4 @@ test7VAL : pthread_SJF test7txt
 	valgrind ./pthread_SJF 2 < test7.txt
 
 test8VAL : pthread_SJF test8txt
-	valgrind ./pthread_SJF < test8.txt
+	valgrind ./pthread_SJF 2 < test8.txt

@@ -1,0 +1,24 @@
+
+Sample input/output for assignment 2 - part2 
+
+User Process Arrival Duration Priority
+Jim 	A 	2 	5 	1
+Mary 	B 	2 	3 	1
+Sue 	D 	5 	5 	5
+Mary 	C 	6 	2 	5
+
+
+Time	CPU#1	CPU#2
+2	B	A
+3	B	A
+4	B	A
+5	D	A
+6	C	A
+7	C	D
+8		D
+9		D
+10		D
+
+Jim	7
+Mary	8
+Sue	11

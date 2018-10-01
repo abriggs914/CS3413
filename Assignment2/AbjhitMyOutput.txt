@@ -1,0 +1,17 @@
+hey there
+Time	CPU1	CPU2	
+
+2	B	A	
+3	B	A	
+4	B	A	
+5	A	D	
+6	A	D	
+7	D	C	
+8	D	C	
+9	D	
+10	IDLE
+
+Summary:
+Jim	7
+Mary	9
+Sue	10

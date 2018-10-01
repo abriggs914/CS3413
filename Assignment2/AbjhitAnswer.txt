@@ -1,0 +1,14 @@
+Time	CPU#1	CPU#2
+2	B	A
+3	B	A
+4	B	A
+5	D	A
+6	C	A
+7	C	D
+8		D
+9		D
+10		D
+
+Jim	7
+Mary	8
+Sue	11

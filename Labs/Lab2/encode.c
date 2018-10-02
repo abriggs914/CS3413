@@ -1,8 +1,14 @@
 /*
+*	CS3413 Lab2
+*	Oct. 2 2018
+*	Avery Briggs
+*	3471065
+*
 *	C program to read in a line of text.
 *	and perform basic operations on each 
 *	character using pthreads. the char is
 *	passed around using a pipe 
+*
 */
 
 #include <sys/types.h>

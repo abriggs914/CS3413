@@ -1,3 +1,10 @@
+/*
+*	C program to read in a line of text.
+*	and perform basic operations on each 
+*	character using pthreads. the char is
+*	passed around using a pipe 
+*/
+
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <stdio.h>
@@ -5,121 +12,76 @@
 #include <unistd.h>
 #include <string.h>
 #include <pthread.h>
+#include <signal.h>
 
 pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 	
 int pipeEnd[2];
 
 void * shift_lower_case(void * arg){
-	//char * ptr = NULL;
-	//ptr = (char *)line;
-	//dup2(pipeEnd[0], STDIN_FILENO);
-	printf("shift_lower_case\n");
-	pthread_mutex_lock(&mutex);	
-	int l = read(pipeEnd[0], arg, 100);
-	pthread_mutex_unlock(&mutex);
-	printf("l: %d\n", l);
-	char c = 'z';
-	char * ptr = (char *)arg;
-	printf("shift_lower_case(%c)\n", *ptr);
+	char a;
+	read(pipeEnd[0], &a, 1);
+	char * ptr = &a;
+	//printf("shift_lower_case(%d)\n", *ptr);
 	if(*ptr > 64 && *ptr < 91){
 		*ptr = *ptr +32;
-		printf("*ptr: %s\n", ptr);
+		//printf("lower: %c\n", *ptr);
 	}
-	pthread_mutex_lock(&mutex);	
-	pipe(pipeEnd);
-	close(pipeEnd[0]);
-	write(STDOUT_FILENO, ptr, 1);
-	close(pipeEnd[1]);
-	pthread_mutex_unlock(&mutex);
+	write(pipeEnd[1], ptr, 1);
 	pthread_exit(0);
 }
 
 void * shift_5_right(void * arg){
-	printf("shift_5_right\n");
-	pthread_mutex_lock(&mutex);
-	int l = read(pipeEnd[0], arg, 1);
-	pthread_mutex_unlock(&mutex);
-	printf("l: %d\n", l);
-	char c = 'a';
-	char * ptr = (char *)arg;
+	//printf("shift_5_right\n");
+	char a;
+	read(pipeEnd[0], &a, 1);
+	char * ptr = &a;
+	//printf("ptr: %c\n", *ptr);
 	*ptr = *ptr +5;
-	printf("*ptr: %s\n", ptr);
+	//printf("right: %c\n", *ptr);
+	write(pipeEnd[1], ptr, 1);
 	pthread_exit(0);
 }
 
 void * check_overflow(void * arg){
-	printf("check_overflow\n");
-	pthread_mutex_lock(&mutex);
-	int l = read(pipeEnd[0], arg, 100);
-	pthread_mutex_unlock(&mutex);
-	printf("l: %d\n", l);
-	char c = 'a';
-	char * ptr = &c;
+	//printf("check_overflow\n");
+	char a;
+	read(pipeEnd[0], &a, 1);
+	char * ptr = &a;
+	//printf("ptr: %c\n", *ptr);
 	if(*ptr > 122){
 		*ptr = *ptr -26;
+		//printf("overflow: %c\n", *ptr);
 	}
+	write(pipeEnd[1], ptr, 1);
 	pthread_exit(0);
 }
 
 int main(int argc, char ** argv){
-	//pid_t cpid;
-	//scanf("%s", string);
-	//printf("%s\n", string);
-	//buf = string[0];
 	int count = 0;
-	char * buf;
+	char a = 'a';
+	char * buf = &a;
+	char string[50];
+	char * sptr = string;
 	scanf("%c", buf);
-	printf("buf: %c\n", *buf);
 	pthread_t pid1, pid2, pid3;
-	int val = pipe(pipeEnd);
-	if(val == -1) {
-		perror("pipe");
-		exit(EXIT_FAILURE);
-	}
-	while(*buf != 10){
-		close(pipeEnd[0]);
+	pipe(pipeEnd);while(*buf != 10){ //looping until '\n' is read
 		pthread_create(&pid1, NULL, shift_lower_case, NULL);
-		printf("BEFOREWRITE\n");
-		//write(pipeEnd[1], buf, 1);
-		//write(STDIN_FILENO, buf, 1);
-		close(pipeEnd[1]);
-		printf("\nAFTERWRITE\n");
-		wait(NULL);
-		//pthread_create(&pid3, NULL, &check_overflow, &buf);
+		write(pipeEnd[1], buf, 1);
 		pthread_join(pid1, NULL);
 		pthread_create(&pid2, NULL, shift_5_right, NULL);
 		pthread_join(pid2, NULL);
-		printf("count: %d\n", count);
+		pthread_create(&pid3, NULL, check_overflow, NULL);
+		pthread_join(pid3, NULL);
+		read(pipeEnd[0], buf, 1);
+		*sptr = *buf;
+		printf("%c", *buf);
+		sptr++;
 		scanf("%c", buf);
 		count++;
-		*buf = 10;
 	}
-	/*
-	if (pipe(pipefd) == -1) {
-		perror("pipe");
-		exit(EXIT_FAILURE);
-	}
-	cpid = fork();
-	if (cpid == -1) {
-		perror("fork");
-		exit(EXIT_FAILURE);
-	}
-	if (cpid == 0) {    // Child reads from pipe 
-		close(pipefd[1]);          // Close unused write end 
-		while (read(pipefd[0], &buf, 1) > 0)
-			write(STDOUT_FILENO, &buf, 1);
-			
-		write(STDOUT_FILENO, "\n", 1);
-		close(pipefd[0]);
-		_exit(EXIT_SUCCESS);
-	}
-	else{            // Parent writes argv[1] to pipe 
-		close(pipefd[0]);          // Close unused read end 
-		write(pipefd[1], argv[1], strlen(argv[1]));
-		close(pipefd[1]);          // Reader will see EOF 
-		wait(NULL);                // Wait for child 
-		exit(EXIT_SUCCESS);
-	}*/
+	close(pipeEnd[0]);
+	close(pipeEnd[1]);
+	printf("\n");
 	return EXIT_SUCCESS;
 }

@@ -9,6 +9,12 @@
 *	character using pthreads. the char is
 *	passed around using a pipe 
 *
+*	Program creates a new set of 3 pthreads
+*	for each character read in through input.
+*	This is inefiecient for scenarios where
+*	there are several chars. It works for 
+*	all intents and purposes in this lab.
+*
 */
 
 #include <sys/types.h>
@@ -71,7 +77,8 @@ int main(int argc, char ** argv){
 	char * sptr = string;
 	scanf("%c", buf);
 	pthread_t pid1, pid2, pid3;
-	pipe(pipeEnd);while(*buf != 10){ //looping until '\n' is read
+	pipe(pipeEnd);
+	while(*buf != 10){ //looping until '\n' is read
 		pthread_create(&pid1, NULL, shift_lower_case, NULL);
 		write(pipeEnd[1], buf, 1);
 		pthread_join(pid1, NULL);

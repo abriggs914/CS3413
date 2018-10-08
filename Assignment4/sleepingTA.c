@@ -2,6 +2,16 @@
 #include <stdlib.h>
 #include <pthread.h>
 
+struct job{	
+	int studentID; 
+	int arrival;
+	int duration;
+	struct job * next;
+};
+
+int studentIDs = 0;
+struct job * head;
+
 pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 int num = 0, studentNumber = 0;
 
@@ -13,9 +23,17 @@ void * foo(){
 	pthread_exit(0);
 }
 
+void insertFirstNodeCPU(struct job * jobIn){
+	struct job * link = (struct job *) malloc(sizeof(struct job));
+    link->user = jobIn->user;
+    link->next = NULL;
+    withCPU = link;
+}
+
 int main(int argc, char ** argv){
-	int c, t, n, i, numStudents;
-	time_t tm;
+	int c, t, n, i, numStudents, temp;
+	struct job * tjob;
+	time_t tm; 
 	srand((unsigned) time(&tm));
 	if(argc != 7){
 		printf("Usage: 'a.out -c 5 -t 200 -n 12'\n\tPlease try again.\n");
@@ -26,11 +44,19 @@ int main(int argc, char ** argv){
 	n = atoi(argv[6]);
 	numStudents = rand() % n; //numStudents (student per (n) seconds)
 	printf("Number of students for extra help: %d\n", numStudents);
-	printf("\tc: %d\n\tt: %d\n\tn: %d\n\tnum: %d\n", c, t, n, rand() % n);
-	pthread_t ta[4];//aid, bid, cid, did; // 4 TAs (a-d)id
+	printf("\tc: %d\n\tt: %d\n\tn: %d\n\tnum: %d\n", c, t, n, rand() % n);pthread_t ta[4];//aid, bid, cid, did; // 4 TAs (a-d)id
 	for(i = 0; i < 4; i++){
 		pthread_create(&ta[i], NULL, foo, NULL);
 	}
+	temp = numStudents;
+	while(temp > 0){
+		if(head == NULL){
+			pthread_mutex_lock(&mutex);
+			inserFirst(++studentIDs);	
+			pthread_mutex_unlock(&mutex);
+		}
+	}
+	
 	for(i = 0; i < 4; i++){
 		pthread_join(ta[i], NULL);
 	}

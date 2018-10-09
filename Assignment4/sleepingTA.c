@@ -23,11 +23,12 @@ void * foo(){
 	pthread_exit(0);
 }
 
-void insertFirstNodeCPU(struct job * jobIn){
+void insertFirst(int idIn){
 	struct job * link = (struct job *) malloc(sizeof(struct job));
-    link->user = jobIn->user;
+	link->studentID = idIn;
+	printf("idIn: %d\n", idIn);
     link->next = NULL;
-    withCPU = link;
+    head = link;
 }
 
 int main(int argc, char ** argv){
@@ -50,11 +51,10 @@ int main(int argc, char ** argv){
 	}
 	temp = numStudents;
 	while(temp > 0){
-		if(head == NULL){
-			pthread_mutex_lock(&mutex);
-			inserFirst(++studentIDs);	
-			pthread_mutex_unlock(&mutex);
-		}
+		pthread_mutex_lock(&mutex);
+		insertFirst(++studentIDs);	
+		pthread_mutex_unlock(&mutex);
+		temp--;
 	}
 	
 	for(i = 0; i < 4; i++){

@@ -12,6 +12,9 @@ test2 : sleepingTA
 	
 test3 : sleepingTA
 	./sleepingTA -c 8 -t 0 -n 12 
+	
+test4 : sleepingTA
+	./sleepingTA -c 15 -t 2000 -n 120 
 
 clean : 
 	rm sleepingTA

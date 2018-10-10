@@ -1,0 +1,23 @@
+/*
+*	Troubleshooting guide for
+	sleepingTA.c
+*	Avery Briggs
+*	3471065
+*	Oct. 2018
+*/
+	
+	This is a troubleshooting guide for assignment4 
+	should it fail.
+	
+Input:
+	The program is designed to take input via command line.
+	Requires 7 arguments.
+	
+	I have included functionality for situations where the TAs are given 0 time to tutor or when t seconds is 0. The program
+	simply exits.
+	
+Output:	
+	I have included as output the arguments given on the command line as well as a breakdown of the student arrival frequency. 
+	I have also included a summary of the TA's clocked seconds of tutoring. I just printed the array and the final number of seconds they had after their last student left.
+	
+	

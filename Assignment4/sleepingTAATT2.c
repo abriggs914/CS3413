@@ -45,20 +45,18 @@ struct job{
 	struct job * next;
 };
 
-
-struct job * head[4]; // array for keeping track of which student is with which TA
 struct job * front; // pointer to the front of the chair queue
 struct job * rear; // pointer to the last of the chair queue
 int ta[4];
-int c; // num chairs in a queue, c long.
+int c; // num chairs, queue is 4 + c long.
 
-pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
+pthread_mutex_t mutex[5] = PTHREAD_MUTEX_INITIALIZER;
 
-pthread_t pta[4]; // 4 TAs 
+pthread_t pta[4];//aid, bid, cid, did; // 4 TAs (a-d)id
 int num = 0, studentNumber = 0;
 
 void * foo(void * taIDIn){
-	return NULL;
+
 }
 
 // Function calculates and returns the length of a given list
@@ -115,22 +113,43 @@ void removeJob(int offset, struct job * frontIn){
 		}
 		temp = firstChair;
 	}
+	/*
+	//struct job * tempNxt;
+	//printf("got here\n");
+	while(offset >= 1 && temp != NULL){
+		temp = temp->next;
+		offset--;
+	}
+	if(j > 4){
+		for(i = 0; i < 5; i++){
+			firstChair = firstChair->next;
+		}
+		if(temp->next != NULL){
+		    firstChair->next = temp->next;
+		}
+	}
+	else{
+		printf("j > 4\n");
+		if(temp->next != NULL){
+		    placeHolder->next = temp;
+		}
+		else if(firstChair->next != NULL){
+			placeHolder->next = firstChair->next;
+		}
+		firstChair = placeHolder;
+	}
+	printf("offset : %d, j : %d\n", offset, j);
+	temp = firstChair;
+	free(placeHolder);
+	//temp->next = temp->next->next;*/
 	printf("job removed\n");
-}
-
-struct job * wakeupTA(int idIn, int qlen) {
-	struct job * link = (struct job *) malloc(sizeof(struct job));
-	link->studentID = idIn;
-	link->duration = qlen;
-    link->next = NULL;
-	return link;
 }
 
 int enQueue(int idIn, int qlen) {
 	struct job * link = (struct job *) malloc(sizeof(struct job));
 	link->studentID = idIn;
 	link->duration = qlen;
-	int j;
+	int i = 0, j;
 	//printf("idIn: %d, qlen: %d\n", idIn, qlen);
     link->next = NULL;
 	if(front == NULL && rear == NULL){ // queue is empty
@@ -138,8 +157,8 @@ int enQueue(int idIn, int qlen) {
 		return 1; // success
 	}
 	j = length(front);
-	if(j == c){
-		return 0; // fail not enough chairs or TAs
+	if(j == 4 + c){
+		return 0; // fail // not enough chairs or TAs
 	}
 	rear->next = link;
 	rear = link;
@@ -147,14 +166,15 @@ int enQueue(int idIn, int qlen) {
 	if(j == 0){
 		j++;
 	}
-	return j+4; // success
+	return j; // success
 }
-
+/*
 // To Dequeue the first student.
-struct job * deQueue() {
+void deQueue() {
 	struct job * temp = front;
 	if(front == NULL) {
-		return NULL;
+		printf("Queue is Empty\n");
+		return;
 	}
 	if(front == rear) {
 		front = rear = NULL;
@@ -162,12 +182,13 @@ struct job * deQueue() {
 	else {
 		front = front->next;
 	}
-	return temp;
-}
+	free(temp);
+}*/
 
 int main(int argc, char ** argv){
-	int t, n, i, j, k, numStudents, p, q, tsec;
+	int t, n, i, j, numStudents, temp, p, q, tsec;
 	bool acceptStudent = true;
+	struct job * tjob;
 	time_t tm; 
 	srand((unsigned) time(&tm));
 	if(argc != 7){ // not enough arguments
@@ -179,7 +200,6 @@ int main(int argc, char ** argv){
 	n = atoi(argv[6]);
 	for(p = 0; p < 4; p++){
 		ta[p] = t;
-		head[p] = NULL;
 	}
 	if(t <= 0 || t <= 0){ // arguments out of bounds
 		printf("Usage: 'a.out -c 5 -t 200 -n 12'\n\tPlease try again.\n");
@@ -193,60 +213,70 @@ int main(int argc, char ** argv){
 		numStudents = rand() % n; //numStudents (student per (n) seconds)
 	}
 	printf("1 student per %d seconds\n", numStudents);
-	printf("\tc: %d\n\tt: %d\n\tn: %d\n\n", c, t, n);
+	printf("\tc: %d\n\tt: %d\n\tn: %d\n\tnum: %d\n", c, t, n, rand() % n);
 	tsec = 0;
 	i = 0;
-	q = 0;
 	while(acceptStudent){
-		if(tsec % numStudents == 0 && tsec != 0){ // create a student	
-			p = 0;
-			while(q <= 2 || q >= 31){
-				q = rand() % 30;
-			}
-			//q = ((q < 3)? q += 3 : q);
-			//printf("Spawn student: %d t(%d), with qlen: %d\n", i+1, tsec, q);
-			pthread_mutex_lock(&mutex);
-			for(k = 0; k < 4; k++){
-				if(head[k] == NULL){
-					head[k] = wakeupTA(i+1, q);
-					p=2;
-					break;
-				}
-			}
-			pthread_mutex_unlock(&mutex);
-			if(k == 4){
-				p = enQueue(i+1, q);
-			}
+		if(tsec % numStudents == 0 && tsec != 0){ // create a student
+			q = rand() % 30;
+			q = ((q < 3)? q += 3 : q);
+			printf("Spawn student: %d t(%d), with qlen: %d\n", i+1, tsec, q);
+			p = enQueue(i+1, q);
 			if(p == 0){
-				printf("\tStudent %d is not taking a chance in the lab with their assignment.\n", i+1);
+				printf("\tStudent %d is not taking a chance in the lab with their assignment.\n", i);
 			}
-			else if(p >= 4 || p == 1){
+			else if(p >= 4){
 				printf("\tStudent %d is waiting for a TA.\n", i+1);
-			}
-			for(k = 0; k < 4; k++){
-				if(head[k] != NULL){
-					head[k]->duration--;
-					ta[k]--;
-				}
-				if(head[k] != NULL && head[k]->duration <= 0){
-					printf("\tStudent %d is going to pass this assignment!\n", head[k]->studentID);
-    				head[k] = deQueue();
-					if(ta[k] <= 0){
-					}
-				}
 			}
 			i++;
 		}
+		if(front == NULL){
+			printf("...waiting for a student to arrive...\n");
+			//sleep(1);
+		}
+		else{
+			pthread_mutex_lock(&mutex[4]);
+			j = length(front);
+			temp = 0;
+			int frontoffset = 0;
+			struct job * curr = front;
+			while(j > 0 && temp < 4){ // j checks end of queue
+				if(curr->duration != -900){
+					ta[temp]--;
+					curr->duration--;
+					printf("Student %d is working with TA[%d] for %d more sec\n", curr->studentID, temp, curr->duration);
+					if(curr->duration <= 0){
+						printf("removeJob\n");
+						removeJob(frontoffset, front);
+					}
+				}
+				else{
+					printf("PLACEHOLDER\n");
+				}
+				temp++;
+				frontoffset++;
+				j--;
+				if(j > 0){
+					curr = curr->next;
+				}
+			}
+			pthread_mutex_unlock(&mutex[4]);
+		}
 		tsec++;
+		bool taGoHome = false;
 		j = 0;
 		q = 0;
 		while(j < 4){
 			if(ta[j] <= 0){
+				//pthread_mutex_lock(&mutex[j]);
 				q++;
 			}
 			j++;
 		}
-		if(q == 4){ // all TAs have met quota
+		if(q == 4 || tsec > 500){
+			if(tsec > 500){
+				printf("poor constraint\n");
+			}
 			acceptStudent = false;
 			j = 0;
 			while(j < 4){
@@ -255,6 +285,38 @@ int main(int argc, char ** argv){
 			}
 		}
 	}
+	/*
+	while(acceptStudent && tsec < 500){
+		ta[0] -= 100;
+		ta[1] -= 100;
+		ta[2] -= 100;
+		ta[3] -= 100;
+		p = rand() % 30;
+		p = ((p < 3)? p += 3 : p);
+		insertFirst(++studentIDs, p);
+		for(p = 0; p < 4; p++){
+			if(ta[p] == 0){
+				q++;
+			}
+		}
+		if(q == 4){
+			acceptStudent = false;
+		}
+		q = 0;
+		tsec++;
+		printf("tsec: %d\n", tsec);
+	}
+
+/*
+	while(temp > 0){ // loops for a set number of students, doesnt work
+		//pthread_mutex_lock(&mutex);  // for running TA's time down.
+		p = rand() % 30;
+		p = ((p < 3)? p += 3 : p);
+		insertFirst(++studentIDs, p);	
+		//pthread_mutex_unlock(&mutex);
+		temp--;
+	}*/
+	
 	for(i = 0; i < 4; i++){
 		pthread_join(pta[i], NULL);
 	}

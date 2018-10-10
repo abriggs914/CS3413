@@ -73,51 +73,6 @@ int length(struct job * headIn){
     return length;
 }
 
-void removeJob(int offset, struct job * frontIn){
-	struct job * temp = frontIn;
-	struct job * temp2 = frontIn;
-	struct job * firstChair = frontIn;
-	struct job * placeHolder = (struct job *) malloc(sizeof(struct job));
-	placeHolder->studentID = -900;
-	placeHolder->duration = -900;
-    placeHolder->next = NULL;
-	int i, j = length(frontIn);
-	
-	printf("offset : %d, j : %d\n", offset, j);
-	if(offset == 0 && j == 1){ // remove first and only job
-		printf("CASE 1\n");
-		front = NULL;
-	}
-	else if(j < 5){ // nothing to replace what is removed
-		printf("CASE 2\n");
-		while(offset > 0){
-			temp = temp->next;
-			offset--;
-		} // locate the job to remove
-		placeHolder->next = temp->next;
-		temp = placeHolder;
-	}
-	else{ // a job is waiting
-		printf("CASE 3\n");
-		for(i = 0; i < 4; i++){
-			firstChair = firstChair->next;
-		}
-		if(temp->next != NULL){
-			temp2 = firstChair->next;
-		    firstChair->next = temp->next;
-		printf("got here\n");
-			i = 0;
-		    while(firstChair->next != temp2 && i < j){
-		    	firstChair = firstChair->next;
-		    	i++;
-		    }
-		    firstChair->next = temp2;
-		}
-		temp = firstChair;
-	}
-	printf("job removed\n");
-}
-
 struct job * wakeupTA(int idIn, int qlen) {
 	struct job * link = (struct job *) malloc(sizeof(struct job));
 	link->studentID = idIn;

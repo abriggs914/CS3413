@@ -19,5 +19,7 @@ test4 : bridge test3.txt	#testing <3 cars per queue
 test5 : bridge test1.txt #testing speedLimit argument
 	./bridge 1 < test1.txt
 
+test6 : bridge test5.txt #testing 3 consecutive switching
+		./bridge 5 < test5.txt
 clean :
 	rm bridge

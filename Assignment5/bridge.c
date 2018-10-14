@@ -95,7 +95,7 @@ void * ArriveBridge(void * carIn){
       carsCrossedInOneDirection = 0;
       flow = ((flow == 'N')? 'S' :  'N');
     }
-    if(flow == -1 || (carsOnBridge == 0 && j > 3)){ // bridge empty, set direction
+    if(flow == -1 || (carsOnBridge == 0 && j > speedLimit)){ // bridge empty, set direction
       flow = dir;
       carsCrossedInOneDirection = 0;
     }

@@ -1,0 +1,9 @@
+Car Direction Arrival
+Mary  N 1
+Mark  S 2
+Avery S 3
+Jim N 4
+Mary  S 8
+Mark  N 16
+Avery N 17
+Jim S 20

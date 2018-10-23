@@ -23,8 +23,8 @@ sem_t semaphore;
 pthread_t smokers[3];
 pthread_t agent;
 int cigarettesMade = 0;
-int stopCond = 5;
-int sleepTime = 5;
+int stopCond = 200; //how many cigarettes would you like to make?
+int sleepTime = 20; //how long does it take to smoke a cigarette?
 int firstItem;
 int secondItem;
 

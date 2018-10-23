@@ -23,6 +23,8 @@ sem_t semaphore;
 pthread_t smokers[3];
 pthread_t agent;
 int cigarettesMade = 0;
+int stopCond = 200;
+int sleepTime = 5;
 int firstItem;
 int secondItem;
 
@@ -41,22 +43,18 @@ char * itemName(int n){
 void * checkTable(void * arg){
   time_t tm;
   srand((unsigned) time(&tm));
-  sleep(1);
   int * myItem = (int *)arg;
-  int n = rand() % 122, a, m, sleepTime = 5;
-  printf("myItem: %d\n", *myItem);
-  while(cigarettesMade < 10){
-    //printf("checkTable cigarettesMade: %d\n", cigarettesMade);
+  int a, m;
+  while(cigarettesMade < stopCond){
     switch(*myItem){
-      //printf("switch cigarettesMade: %d\n", cigarettesMade);
       case tabacco :  if(firstItem == paper || firstItem == matches){
                         if(secondItem == paper || secondItem == matches){
                           a = sem_wait(&semaphore);
                           firstItem = secondItem = -1;
                           cigarettesMade++;
                           m = (rand()%sleepTime);
-                          printf("cigarette made by tabacco, smoking for: %d\n\n", m);
-                          sem_post(&semaphore);
+                          printf("cigarette made by tabacco, smoking for: %d\n", m);
+                          a = sem_post(&semaphore);
                           sleep(m);
                         }
                       }
@@ -67,8 +65,8 @@ void * checkTable(void * arg){
                           firstItem = secondItem = -1;
                           cigarettesMade++;
                           m = (rand()%sleepTime);
-                          printf("cigarette made by paper, smoking for: %d\n\n", m);
-                          sem_post(&semaphore);
+                          printf("cigarette made by paper, smoking for: %d\n", m);
+                          a = sem_post(&semaphore);
                           sleep(m);
                         }
                       }
@@ -79,8 +77,8 @@ void * checkTable(void * arg){
                           firstItem = secondItem = -1;
                           cigarettesMade++;
                           m = (rand()%sleepTime);
-                          printf("cigarette made by matches, smoking for: %d\n\n", m);
-                          sem_post(&semaphore);
+                          printf("cigarette made by matches, smoking for: %d\n", m);
+                          a = sem_post(&semaphore);
                           sleep(m);
                         }
                       }
@@ -88,8 +86,10 @@ void * checkTable(void * arg){
      default :  printf("something went wrong myItem: %d\n", *myItem);
                 break;
     }
+    //printf("%s sleep\n", itemName(*myItem));
+    //sleep(1);
   }
-  printf("%s dying @ t = %d\n", itemName(*myItem), n);
+  //printf("%s dying @ t = %d\n", itemName(*myItem), n);
   pthread_exit(0);
 }
 
@@ -102,6 +102,8 @@ int dealFirst(){
 }
 
 int dealSecond(int first){
+  time_t tm;
+  srand((unsigned) time(&tm));
   int second = rand() % 122;
   while(second != paper && second != tabacco && second != matches){
     second = rand() % 122;
@@ -122,27 +124,28 @@ void * deal(void * arg){
   time_t tm;
   srand((unsigned) time(&tm));
   firstItem = secondItem = -1;
-  while(cigarettesMade < 10){
-    //printf("cigarettesMade: %d\n", cigarettesMade);
+  while(cigarettesMade < stopCond){
     if(firstItem != -1 || secondItem != -1){
+      //printf("dealer sleeps\n");
       sleep(1);
     }
     else{
+      printf("cigarettesMade: %d\n\n", cigarettesMade);
       a = sem_wait(&semaphore);
       first = dealFirst();
       sleep(1);
       second = dealSecond(first);
       sleep(1);
-      //printf("second: %d\n", second);
       char *f = itemName(first);
       char *s = itemName(second);
-      //printf("first: %d, second: %d\n", first, second);
       printf("Agent dealt : %s\tand\t%s\n", f, s);
       firstItem = first;
       secondItem = second;
       a = sem_post(&semaphore);
     }
   }
+  printf("cigarettesMade: %d\n\n", cigarettesMade);
+  pthread_exit(0);
   return NULL;
 }
 

@@ -22,36 +22,36 @@
 struct memBlocks{
   int start;
   int end;
+  int inUse;
   struct memBlocks * next;
 };
+
+struct memBlocks * base;
+
+void enQueue(struct memBlocks * newBlock){
+	if(base == NULL && rear == NULL){ // queue is empty
+		front = rear = newBlock;
+    strcpy(front->driver, carIn->driver);
+    strcpy(rear->driver, carIn->driver);
+    base->next = NULL;
+		return;
+	}
+	rear->next = newBlock;
+  strcpy(rear->next->driver, carIn->driver);
+	rear = newBlock;
+  strcpy(rear->driver, carIn->driver);
+  rear->next = NULL;
+	return;
+}
 
 int main(int argc, char ** argv){
   if(argc != 4 && argc != 5){
     printf("Failure\n");
     return EXIT_FAILURE;
   }
-  int memT = -1;
-  char alg;
+  int memT = atoi(argv[2]);
+  char alg = argv[3][1];
   int i;
-  for(i = 1; i < 5; i++){
-    printf("argv[i]: %s\n", argv[i]);
-    if(argv[i] == "-s"){
-      printf("mem\n");
-      memT = atoi(argv[i+1]);
-    }
-    else if(argv[i] == "-f"){
-      printf("-f\n");
-      alg = 'f';
-    }
-    else if(argv[i] == "-b"){
-      printf("-b\n");
-      alg = 'b';
-    }
-    else if(argv[i] == "-w"){
-      printf("-w\n");
-      alg = 'w';
-    }
-  }
   printf("memT: %d, alg: -%c\n",memT, alg);
   return EXIT_SUCCESS;
 }

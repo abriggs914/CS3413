@@ -27,12 +27,13 @@ struct memBlocks{
 };
 
 struct memBlocks * base;
+struct memBlocks * rear;
 
 void enQueue(struct memBlocks * newBlock){
 	if(base == NULL && rear == NULL){ // queue is empty
 		front = rear = newBlock;
-    strcpy(front->driver, carIn->driver);
-    strcpy(rear->driver, carIn->driver);
+    //strcpy(front->driver, carIn->driver);
+    //strcpy(rear->driver, carIn->driver);
     base->next = NULL;
 		return;
 	}

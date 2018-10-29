@@ -1,0 +1,21 @@
+Input:
+  Expected input is of 1 of 2 forms:
+  N(#1) (#2) ,where (#1) is the process id you want to created
+  and (#2) is the total required memory for the process.
+  Or
+  T(#) ,where (#) is the process id you wish to terminate.
+
+Output:
+  Program outputs the step by step processing of the input.
+  if a process is successfully allocated, a message will print
+  reporting it's id. The contents of memory will print for each
+  process added to it.
+  If a process fails to allocate memory or free memory, once it has
+  been created, a short message will report it's id.
+  At the end of input, a short message will display which processes
+  failed to free their memory. The contents of the memory will print
+  at this time. The contents should be a single hole spanning the
+  entirety of the memory space, if it is empty, and all processes
+  have been freed. Else, the list will print the left over jobs.
+  Finally, a summary table is printed, reporting the total numbers
+  of processes reated/terminated, and data allocated/freed.

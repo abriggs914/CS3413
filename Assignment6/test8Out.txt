@@ -1,0 +1,107 @@
+Total memory available: 2000, algorithm: b
+You may enter 'q' anytime to stop input.
+
+allocation successful! proc: 1
+
+	MEM_LIST<
+	Process, id: 1, inUse: true, base: 0, limit: 500
+	Hole, id: -1, inUse: false, base: 500, limit: 1500
+	>MEM_LIST
+
+allocation successful! proc: 2
+
+	MEM_LIST<
+	Process, id: 1, inUse: true, base: 0, limit: 500
+	Process, id: 2, inUse: true, base: 500, limit: 100
+	Hole, id: -1, inUse: false, base: 600, limit: 1400
+	>MEM_LIST
+
+allocation successful! proc: 3
+
+	MEM_LIST<
+	Process, id: 1, inUse: true, base: 0, limit: 500
+	Process, id: 2, inUse: true, base: 500, limit: 100
+	Process, id: 3, inUse: true, base: 600, limit: 800
+	Hole, id: -1, inUse: false, base: 1400, limit: 600
+	>MEM_LIST
+
+Process 4 failed to allocate 700 memory
+
+allocation successful! proc: 5
+
+	MEM_LIST<
+	Process, id: 1, inUse: true, base: 0, limit: 500
+	Process, id: 2, inUse: true, base: 500, limit: 100
+	Process, id: 3, inUse: true, base: 600, limit: 800
+	Process, id: 5, inUse: true, base: 1400, limit: 200
+	Hole, id: -1, inUse: false, base: 1600, limit: 400
+	>MEM_LIST
+
+allocation successful! proc: 6
+
+	MEM_LIST<
+	Process, id: 1, inUse: true, base: 0, limit: 500
+	Process, id: 2, inUse: true, base: 500, limit: 100
+	Process, id: 3, inUse: true, base: 600, limit: 800
+	Process, id: 5, inUse: true, base: 1400, limit: 200
+	Process, id: 6, inUse: true, base: 1600, limit: 100
+	Hole, id: -1, inUse: false, base: 1700, limit: 300
+	>MEM_LIST
+
+Process 7 failed to allocate 800 memory
+
+Process 8 failed to allocate 700 memory
+
+Freeing process 3, base: 600 to 1400 (base+limit)
+
+allocation successful! proc: 9
+
+	MEM_LIST<
+	Process, id: 1, inUse: true, base: 0, limit: 500
+	Process, id: 2, inUse: true, base: 500, limit: 100
+	Hole, id: -1, inUse: false, base: 600, limit: 800
+	Process, id: 5, inUse: true, base: 1400, limit: 200
+	Process, id: 6, inUse: true, base: 1600, limit: 100
+	Process, id: 9, inUse: true, base: 1700, limit: 200
+	Hole, id: -1, inUse: false, base: 1900, limit: 100
+	>MEM_LIST
+
+allocation successful! proc: 10
+
+	MEM_LIST<
+	Process, id: 1, inUse: true, base: 0, limit: 500
+	Process, id: 2, inUse: true, base: 500, limit: 100
+	Hole, id: -1, inUse: false, base: 600, limit: 800
+	Process, id: 5, inUse: true, base: 1400, limit: 200
+	Process, id: 6, inUse: true, base: 1600, limit: 100
+	Process, id: 9, inUse: true, base: 1700, limit: 200
+	Process, id: 10, inUse: true, base: 1900, limit: 100
+	Hole, id: -1, inUse: false, base: 2000, limit: 0
+	>MEM_LIST
+
+Freeing process 1, base: 0 to 500 (base+limit)
+
+Freeing process 5, base: 1400 to 1600 (base+limit)
+
+Freeing process 6, base: 1600 to 1700 (base+limit)
+
+Freeing process 10, base: 1900 to 2000 (base+limit)
+
+Freeing process 9, base: 1700 to 1900 (base+limit)
+
+Freeing process 2, base: 500 to 600 (base+limit)
+
+	Processes still running:
+	NONE
+
+
+	MEM_LIST<
+	Hole, id: -1, inUse: false, base: 0, limit: 2000
+	>MEM_LIST
+
+
+	SUMMARY
+Total Processes created:	7
+Total allocated memory:		2000
+Total Processes terminated:	7
+Total freed memory:		2000

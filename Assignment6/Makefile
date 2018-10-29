@@ -13,5 +13,14 @@ test2 : mem_alloc test2.txt#first fit
 test3 : mem_alloc test2.txt #best fit
 	./mem_alloc -s 2000 -b < test2.txt
 
+test4 : mem_alloc test3.txt #best fit
+	./mem_alloc -s 2000 -b < test3.txt
+
+test5 : mem_alloc test4.txt #best fit forces P5 into end space of memory instead of beginning
+	./mem_alloc -s 2000 -b < test4.txt
+
+test6 : mem_alloc test4.txt #worst fit forces P5 into end space of memory instead of beginning
+	./mem_alloc -s 2000 -w < test4.txt
+
 clean :
 	rm mem_alloc

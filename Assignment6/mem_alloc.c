@@ -35,25 +35,9 @@ int numProcessesC = 0;
 int numProcessesT = 0;
 int mem_alloc_T = 0;
 int mem_free_T = 0;
-/*
-void enQueue(struct memBlocks * newBlock){
-	if(base == NULL && rear == NULL){ // queue is empty
-		front = rear = newBlock;
-    //strcpy(front->driver, carIn->driver);
-    //strcpy(rear->driver, carIn->driver);
-    base->next = NULL;
-		return;
-	}
-	rear->next = newBlock;
-  //strcpy(rear->next->driver, carIn->driver);
-	rear = newBlock;
-  //strcpy(rear->driver, carIn->driver);
-  rear->next = NULL;
-	return;
-}*/
 
 void printProc(struct memBlocks * temp){
-    printf("%s, temp->id: %d, temp->inUse: %d, temp->base: %d, temp->limit: %d\n", ((temp->inUse == 0)? "Hole":"Process"), temp->id, temp->inUse, temp->base, temp->limit);
+    printf("\t%s, id: %d, inUse: %d, base: %d, limit: %d\n", ((temp->inUse == 0)? "Hole":"Process"), temp->id, temp->inUse, temp->base, temp->limit);
 }
 
 void printList(){
@@ -64,6 +48,14 @@ void printList(){
         temp = temp->next;
     }
     printf("\t>LIST\n\n");
+}
+
+void fail_alloc(struct memBlocks * proc){
+    printf("Process %d failed to allocate %d memory\n", proc->id, proc->limit);
+}
+
+void fail_free(struct memBlocks * proc){
+    printf("Process %d failed to free memory\n", proc->id);
 }
 
 int get_id(char line[]){
@@ -94,12 +86,8 @@ void decipher(char ** line){
 struct memBlocks * proc_from_id(int id){
   struct memBlocks * temp = baseMM;
   while(temp->id != id && temp->next != NULL){
-    //printf("NEXT\n");
-    //printProc(temp);
     temp = temp->next;
   }
-  //printf("FOUND IT\n");
-  //printProc(temp);
   return temp;
 }
 
@@ -113,6 +101,8 @@ struct memBlocks * process_in(int id, int limit){
     return newProc;
 }
 
+//Function is called to concatenate and free adjacent empty spaces.
+//Only frees gaps in memory that are not in use, and adjacent to each other.
 void defrag(){
 //printf("\nDEFRAG<\n");
   struct memBlocks * temp = baseMM;
@@ -124,40 +114,30 @@ void defrag(){
       if(temp->inUse == 0 && temp_next->inUse == 0){
         temp->limit += temp_next->limit;
         temp->next = temp_next->next;
+        temp_next->base = temp->base;
         free(temp_next);
+        return;
       }
       temp = temp_next;
       temp_next = temp->next;
     }
   }
-  printList();
+  //printList();
 }
 
 void process_out(struct memBlocks * proc){
     if(-1 != proc->id){
         mem_free_T += proc->limit;
         numProcessesT++;
-      printf("Process %d leaving freeing base: %d - %d (base+limit)\n",proc->id,proc->base,proc->limit+proc->base);
+      printf("Process %d leaving freeing base: %d - %d (base+limit)\n\n",proc->id,proc->base,proc->limit+proc->base);
       proc->inUse = 0;
       proc->id = -1;
       defrag();
-    }/*
-    printf("\n\tLIST<\n");
-    printList();
-    printf("\t>LIST\n\n");*/
-}
-
-void fail_alloc(struct memBlocks * proc){
-    printf("Process %d failed to allocate %d memory\n", proc->id, proc->limit);
-}
-
-void fail_free(struct memBlocks * proc){
-    printf("Process %d failed to free memory\n", proc->id);
+    }
 }
 
 void split_hole(struct memBlocks * temp, struct memBlocks * proc){
     //printf("\tsplit_hole\n");
-    // base case temp == baseMM;
     if(temp->limit == memT || temp->base == 0){ // nothing points to temp
         //printf("\n\n\ntemp == baseMM\n");
         proc->base = temp->base;
@@ -165,10 +145,6 @@ void split_hole(struct memBlocks * temp, struct memBlocks * proc){
         temp->limit -= proc->limit;
         proc->next = temp;
         proc->inUse = 1;
-        /*printf("Hey there\n\n");
-        //printProc(proc);
-        printList();
-        printf("Hey there\n\n");*/
         baseMM = proc;
     }
     else{
@@ -176,7 +152,6 @@ void split_hole(struct memBlocks * temp, struct memBlocks * proc){
         while(temp_next->next != temp){
             temp_next = temp_next->next;
         }
-        //printProc(temp_next);
         proc->base = temp->base;
         temp->base = temp->base + proc->limit;
         temp->limit = temp->limit - proc->limit;
@@ -192,7 +167,7 @@ void firstFit(struct memBlocks * proc){
     struct memBlocks * temp = baseMM;
     if(proc->limit > memT){ // process is too large
         fail_alloc(proc);
-        printf("\tBecause it is too large.\n");
+        printf("\tBecause it is too large.\n\n");
         return;
     }
     while(temp != NULL){
@@ -207,7 +182,7 @@ void firstFit(struct memBlocks * proc){
             }
             split_hole(temp, proc);
             //printProc(proc);
-            printf("\tAllocation successful!\n");
+            printf("Allocation successful! proc: %d\n\n", proc->id);
             return; // allocation successful
         }
         temp = temp->next;
@@ -220,21 +195,28 @@ void bestFit(struct memBlocks * proc){
     struct memBlocks * bestBlock = baseMM;
     if(proc->limit > memT){ // process is too large
         fail_alloc(proc);
-        printf("\tBecause it is too large.\n");
+        printf("\tBecause it is too large.\n\n");
         return;
     }
     int residual = temp->limit;//999999999;
+    while(temp != NULL){
+        if(temp->inUse == 0){
+            residual = temp->limit;
+        }
+        temp = temp->next;
+    }    
+    temp = baseMM;
     while(temp != NULL){
       /*
         printf("baseMM->base: %d, baseMM->limit: %d\n", baseMM->base, memT);
         printProc(temp);
         printf("proc->id: %d, proc->base: %d, proc->limit: %d\n\n", proc->id, proc->base, proc->limit);
-      */
+      *//*
       printf("\n");
       printProc(proc);
       printf("\tproc VS temp residual: %d\n", residual);
       printProc(temp);
-      printf("\n");
+      printf("\n");*/
       if(temp->inUse == 0 && temp->limit >= proc->limit){
         if(temp->limit - proc->limit < residual){
           residual = temp->limit - proc->limit;
@@ -246,7 +228,7 @@ void bestFit(struct memBlocks * proc){
     if(bestBlock->inUse == 0){
         split_hole(bestBlock, proc);
         //printProc(proc);
-        printf("\tAllocation successful! proc: %d\n", proc->id);
+        printf("Allocation successful! proc: %d\n\n", proc->id);
         printList();
         return; // allocation successful
     }
@@ -255,27 +237,45 @@ void bestFit(struct memBlocks * proc){
 
 void worstFit(struct memBlocks * proc){
     struct memBlocks * temp = baseMM;
+    struct memBlocks * worstBlock = baseMM;
     if(proc->limit > memT){ // process is too large
         fail_alloc(proc);
-        printf("\tBecause it is too large.\n");
+        printf("\tBecause it is too large.\n\n");
         return;
     }
+    int residual = temp->limit;//999999999;
+    while(temp != NULL){
+        if(temp->inUse == 0){
+            residual = temp->limit;
+        }
+        temp = temp->next;
+    }    
+    temp = baseMM;
     while(temp != NULL){
       /*
         printf("baseMM->base: %d, baseMM->limit: %d\n", baseMM->base, memT);
         printProc(temp);
         printf("proc->id: %d, proc->base: %d, proc->limit: %d\n\n", proc->id, proc->base, proc->limit);
       */
-        if(temp->inUse == 0 && temp->limit >= proc->limit){
-            if(temp == baseMM){
-                baseMM = proc;
-            }
-            split_hole(temp, proc);
-            //printProc(proc);
-            printf("\tAllocation successful!\n");
-            return; // allocation successful
+      printf("\n");
+      printProc(proc);
+      printf("\tproc VS temp residual: %d\n", residual);
+      printProc(temp);
+      printf("\n");
+      if(temp->inUse == 0 && temp->limit <= proc->limit){
+        if(temp->limit - proc->limit >= residual){
+          residual = temp->limit - proc->limit;
+          worstBlock = temp;
         }
+      }
         temp = temp->next;
+    }
+    if(worstBlock->inUse == 0){
+        split_hole(worstBlock, proc);
+        //printProc(proc);
+        printf("Allocation successful! proc: %d\n\n", proc->id);
+        printList();
+        return; // allocation successful
     }
     fail_alloc(proc);
 }

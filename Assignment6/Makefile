@@ -47,7 +47,7 @@ test11 : mem_alloc test5.txt #best fit
 test12 : mem_alloc test5.txt #worst fit
 	./mem_alloc -s 2000 -w < test6.txt
 
-test13 : test8 test9
+test13 : test8 test9 #this test shows the difference between bf and wf
 	diff test8Out.txt test9Out.txt
 
 clean :

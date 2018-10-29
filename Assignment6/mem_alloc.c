@@ -153,8 +153,8 @@ void split_hole(struct memBlocks * temp, struct memBlocks * proc){
             temp_next = temp_next->next;
         }
         proc->base = temp->base;
-        temp->base = temp->base + proc->limit;
-        temp->limit = temp->limit - proc->limit;
+        temp->base += proc->limit;
+        temp->limit -= proc->limit;
         proc->next = temp;
         proc->inUse = 1;
         temp_next->next = proc;

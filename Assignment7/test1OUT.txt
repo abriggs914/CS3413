@@ -1,10 +1,4 @@
-num: 5673982, num/pageMask: 1385, num&offsetMask: 1022
-num: 5673982, num/pageMask: 1385, num&offsetMask: 1022
-num: 5673982, num/pageMask: 1385, num&offsetMask: 1022
-num: 5673982, num/pageMask: 1385, num&offsetMask: 1022
-num: 5673982, num/pageMask: 1385, num&offsetMask: 1022
-num: 5673982, num/pageMask: 1385, num&offsetMask: 1022
-num: 5673982, num/pageMask: 1385, num&offsetMask: 1022
-num: 5673982, num/pageMask: 1385, num&offsetMask: 1022
-num: 5673982, num/pageMask: 1385, num&offsetMask: 1022
-num: 5673982, num/pageMask: 1385, num&offsetMask: 1022
+Logical			Physical
+			Page	Offset
+5673982	->	1385	1022
+Total page faults: 1

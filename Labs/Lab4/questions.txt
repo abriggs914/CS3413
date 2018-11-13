@@ -1,0 +1,47 @@
+CS3413 Lab 4
+Nov. 13 2018
+Avery Briggs
+3471065
+
+Question 1:
+  What are the top 3 functions that are called during execution.
+
+  The top three functions that are called during execution of mem_alloc, are:
+  printProc() - Used to report attributes of a process
+  defrag() - Used to replace adjacent Holes in memory space (two adjacent Holes
+              become one after calling)
+  get_id() - Used to decipher the process id from an input line of text.
+
+Question 2:
+  From the information in #1, do you see any ways you can improve the execution of your
+  program?
+
+  Looking at the top three executed functions (printProc, defrag, and get_id),
+  I don't believe there is a way to reduce calls, or execution time of these
+  functions. They are called minimally, on input or when reporting. Only
+  defrag appears to be called slightly more than it would need to be. This is
+  because it is used a safety-check function in this program. It is called in
+  instances where there may not be any part to execute on input. There are
+  conditions to ensure if it was called with nothing to do, it will return early.
+  There are several possible situations where a process is added or removed and
+  defrag wouldn't be able to locate two adjacent holes to merge, so it will
+  return execution elsewhere. Potentially I should be able to reduce calls made
+  to defrag, by only calling it after successfully removing a process. there
+  shouldn't be any cases where a second hole is formed, unless something is
+  removed. I have it being called in printList so that I can ensure that There
+  are no adjacent holes reported, but this call could probably go.
+
+Question 3:
+  Are there any memory leaks in your previous work?
+
+  Yes there are several. I believe that they stemmed from process_in().
+  In my defrag() function, I free any space that has been made due to
+  defragging. But I think that sometimes not all of the list of processes
+  is successfully freed.
+
+Question 4:
+  If yes to #3, do you know how to fix it?
+
+  I was able to reduce the leaks significantly by, creating a local
+  variable of some variable in heap and passing the local before
+  freeing the heap value, and exiting the function it was created in.

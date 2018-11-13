@@ -13,40 +13,40 @@ gprof : compile
 	./profile
 	gprof profile gmon.out > analysis.txt
 
-test1 : mem_alloc test1.txt #first fit and not freeing a process
+test1 : compile test1.txt #first fit and not freeing a process
 	./mem_alloc -s 1000 -f < test1.txt
 
-test2 : mem_alloc test2.txt#first fit
+test2 : compile test2.txt#first fit
 	./mem_alloc -s 250 -f < test2.txt
 
-test3 : mem_alloc test2.txt #best fit
+test3 : compile test2.txt #best fit
 	./mem_alloc -s 2000 -b < test2.txt
 
-test4 : mem_alloc test3.txt #best fit
+test4 : compile test3.txt #best fit
 	./mem_alloc -s 2000 -b < test3.txt
 
-test5 : mem_alloc test4.txt #best fit forces P5 into end space of memory instead of beginning
+test5 : compile test4.txt #best fit forces P5 into end space of memory instead of beginning
 	./mem_alloc -s 2000 -b < test4.txt
 
-test6 : mem_alloc test4.txt #worst fit forces P5 into end space of memory instead of beginning
+test6 : compile test4.txt #worst fit forces P5 into end space of memory instead of beginning
 	./mem_alloc -s 2000 -w < test4.txt
 
-test7 : mem_alloc test5.txt #first fit
+test7 : compile test5.txt #first fit
 	./mem_alloc -s 2000 -f < test5.txt > test7Out.txt
 
-test8 : mem_alloc test5.txt #best fit
+test8 : compile test5.txt #best fit
 	./mem_alloc -s 2000 -b < test5.txt > test8Out.txt
 
-test9 : mem_alloc test5.txt #worst fit
+test9 : compile test5.txt #worst fit
 	./mem_alloc -s 2000 -w < test5.txt > test9Out.txt
 
-test10 : mem_alloc test5.txt #first fit
+test10 : compile test5.txt #first fit
 	./mem_alloc -s 2000 -f < test6.txt
 
-test11 : mem_alloc test5.txt #best fit
+test11 : compile test5.txt #best fit
 	./mem_alloc -s 2000 -b < test6.txt
 
-test12 : mem_alloc test5.txt #worst fit
+test12 : compile test5.txt #worst fit
 	./mem_alloc -s 2000 -w < test6.txt
 
 test13 : test8 test9 #this test shows the difference between bf and wf

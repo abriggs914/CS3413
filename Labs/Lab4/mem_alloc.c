@@ -362,6 +362,15 @@ int main(int argc, char ** argv){
       printList();
       printf("\n\tSUMMARY\n");
       printf("Total Processes created:\t%d\nTotal allocated memory:\t\t%d\nTotal Processes terminated:\t%d\nTotal freed memory:\t\t%d\n", numProcessesC, mem_alloc_T, numProcessesT, mem_free_T);
-      free(baseMM);
+      struct memBlocks * temp;
+      int count = 0;
+      while(baseMM != NULL){
+        printf("count: %d\n", count);
+        temp = baseMM->next;
+        free(baseMM);
+        baseMM = temp;
+        count++;
+      }
+      //free(baseMM);
     return EXIT_SUCCESS;
 }

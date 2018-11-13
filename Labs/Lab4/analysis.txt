@@ -1,10 +1,22 @@
 Flat profile:
 
 Each sample counts as 0.01 seconds.
+ no time accumulated
+
   %   cumulative   self              self     total           
- time   seconds   seconds    calls  ms/call  ms/call  name    
-101.30      0.44     0.44      256     1.70     1.70  func2
-  0.00      0.44     0.00        1     0.00   433.88  func1
+ time   seconds   seconds    calls  Ts/call  Ts/call  name    
+  0.00      0.00     0.00       10     0.00     0.00  printProc
+  0.00      0.00     0.00        7     0.00     0.00  defrag
+  0.00      0.00     0.00        5     0.00     0.00  get_id
+  0.00      0.00     0.00        4     0.00     0.00  printList
+  0.00      0.00     0.00        4     0.00     0.00  process_in
+  0.00      0.00     0.00        3     0.00     0.00  firstFit
+  0.00      0.00     0.00        3     0.00     0.00  split_hole
+  0.00      0.00     0.00        2     0.00     0.00  proc_from_id
+  0.00      0.00     0.00        2     0.00     0.00  process_out
+  0.00      0.00     0.00        1     0.00     0.00  decipher
+  0.00      0.00     0.00        1     0.00     0.00  fail_free
+  0.00      0.00     0.00        1     0.00     0.00  left_over
 
  %         the percentage of the total running time of the
 time       program used by this function.
@@ -42,21 +54,53 @@ notice and this notice are preserved.
 		     Call graph (explanation follows)
 
 
-granularity: each sample hit covers 2 byte(s) for 2.30% of 0.44 seconds
+granularity: each sample hit covers 2 byte(s) no time propagated
 
 index % time    self  children    called     name
-                0.00    0.00       1/256         main [2]
-                0.43    0.00     255/256         func1 [3]
-[1]    100.0    0.44    0.00     256         func2 [1]
+                0.00    0.00      10/10          printList [4]
+[1]      0.0    0.00    0.00      10         printProc [1]
 -----------------------------------------------
-                                                 <spontaneous>
-[2]    100.0    0.00    0.44                 main [2]
-                0.00    0.43       1/1           func1 [3]
-                0.00    0.00       1/256         func2 [1]
+                0.00    0.00       1/7           main [20]
+                0.00    0.00       2/7           process_out [9]
+                0.00    0.00       4/7           printList [4]
+[2]      0.0    0.00    0.00       7         defrag [2]
 -----------------------------------------------
-                0.00    0.43       1/1           main [2]
-[3]     99.6    0.00    0.43       1         func1 [3]
-                0.43    0.00     255/256         func2 [1]
+                0.00    0.00       5/5           main [20]
+[3]      0.0    0.00    0.00       5         get_id [3]
+-----------------------------------------------
+                0.00    0.00       1/4           main [20]
+                0.00    0.00       3/4           firstFit [6]
+[4]      0.0    0.00    0.00       4         printList [4]
+                0.00    0.00      10/10          printProc [1]
+                0.00    0.00       4/7           defrag [2]
+-----------------------------------------------
+                0.00    0.00       4/4           main [20]
+[5]      0.0    0.00    0.00       4         process_in [5]
+-----------------------------------------------
+                0.00    0.00       3/3           main [20]
+[6]      0.0    0.00    0.00       3         firstFit [6]
+                0.00    0.00       3/3           split_hole [7]
+                0.00    0.00       3/4           printList [4]
+-----------------------------------------------
+                0.00    0.00       3/3           firstFit [6]
+[7]      0.0    0.00    0.00       3         split_hole [7]
+-----------------------------------------------
+                0.00    0.00       2/2           main [20]
+[8]      0.0    0.00    0.00       2         proc_from_id [8]
+-----------------------------------------------
+                0.00    0.00       2/2           main [20]
+[9]      0.0    0.00    0.00       2         process_out [9]
+                0.00    0.00       2/7           defrag [2]
+-----------------------------------------------
+                0.00    0.00       1/1           main [20]
+[10]     0.0    0.00    0.00       1         decipher [10]
+-----------------------------------------------
+                0.00    0.00       1/1           left_over [12]
+[11]     0.0    0.00    0.00       1         fail_free [11]
+-----------------------------------------------
+                0.00    0.00       1/1           main [20]
+[12]     0.0    0.00    0.00       1         left_over [12]
+                0.00    0.00       1/1           fail_free [11]
 -----------------------------------------------
 
  This table describes the call tree of the program, and was sorted by
@@ -149,4 +193,7 @@ notice and this notice are preserved.
 
 Index by function name
 
-   [3] func1                   [1] func2
+  [10] decipher                [3] get_id                  [8] proc_from_id
+   [2] defrag                 [12] left_over               [5] process_in
+  [11] fail_free               [4] printList               [9] process_out
+   [6] firstFit                [1] printProc               [7] split_hole

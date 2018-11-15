@@ -7,5 +7,8 @@ memSwap : memSwap.c
 test1 : memSwap test1.txt
 	./memSwap 10 -f < test1.txt
 
+test2 : memSwap test1.txt
+	./memSwap 10 -l < test1.txt
+
 clean : memSwap
 	rm memSwap

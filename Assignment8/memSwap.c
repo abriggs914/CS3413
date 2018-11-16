@@ -57,8 +57,9 @@ int main(int argc, char **argv){
     pageTable = malloc(pow(2,20)*sizeof(unsigned int));
     scan = scanf("%c%ld\n", &action, &logical);
     while(scan == 2){
-      printf("scan: %d, action: %c, logical: %d, physical: %d\n", scan, action, logical, ((logical>>12)));
+      printf("scan: %d, action: %c, logical: %ld, physical: %ld\n", scan, action, logical, ((logical>>12)));
       scan = scanf("%c %ld\n", &action, &logical);
     }
+    free(pageTable);
     return EXIT_SUCCESS;
 }

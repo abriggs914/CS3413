@@ -3,21 +3,48 @@
 #include <string.h>
 #include <math.h>
 
-int pageFaults = 0, swapSaves = 0, swapLoads = 0;
+int pageFaults = 0, swapSaves = 0, swapLoads = 0, numFramesInUse = 0;
 char * algorithm;
 int numFrames;
+int ** swapSpace;
 
 typedef int bool;
 #define true 1
 #define false 0
 
-void init(int *** table){
-  int i, j, k;
+void printT(int ** table){
+  int i;
+  printf("\tLIST<\n");
   for(i = 0; i < numFrames; i++){
-    for(j = 0; j < 1; j++){
-      table[i][j] = 'i';
-      for(i = 0; i < numFrames; i++){
-        table[i][j][k] = 0;
+    printf("page:\t\t %d\n", table[i][0]);
+    printf("offset:\t\t %d\n", table[i][1]);
+    printf("valid / invalid: %c\n", table[i][2]);
+    printf("age:\t\t %d\n", table[i][3]);
+    printf("clean / dirty:   %c\n", table[i][4]);
+    if(i < numFrames-1){
+      printf("\n");
+    }
+  }
+  printf("\t>LIST\n");
+}
+
+void init(int ** table){
+  int i, j;
+  swapSpace = malloc(numFrames*sizeof(unsigned int *));
+  for(i = 0; i < numFrames; i++){
+    swapSpace[i] = malloc(sizeof(int));
+    for(j = 0; j < 5; j++){
+      if(j == 2){
+        table[i][j] = 'i';
+      }
+      else if(j == 3){
+        table[i][j] = 0;
+      }
+      else if(j == 4){
+        table[i][j] = 'c';
+      }
+      else{
+        table[i][j] = -1;
       }
     }
   }
@@ -50,6 +77,76 @@ bool decipher(char ** line){
     return true;
 }
 
+void age(int ** table){
+  int i;
+  for(i = 0; i < numFrames; i++){
+    if(table[i][2] == 'v'){
+      table[i][3]++;
+    }
+  }
+  printT(table);
+}
+
+bool exists(int ** table, long page){
+  int i;
+  for(i = 0; i < numFrames; i++){
+    if(table[i][0] == page){
+      printf("true\n");
+      return true;
+    }
+  }
+  printf("false\n");
+  return false;
+}
+
+void setTable(int ** table, int index, long page, long offset, int stat, int count, int cORd){
+  table[index][0] = page;
+  table[index][1] = offset;
+  table[index][2] = stat;
+  table[index][3] = count;
+  table[index][4] = cORd;
+}
+
+void fifo(unsigned int * pt, int ** table, long offset, long page, char action){
+  printf("FIFO\n");
+    int i, j, k;
+  // not all frames are in use
+  if(!exists(table, page)){
+    if(numFramesInUse < numFrames){
+      pt[page] = offset;
+      pageFaults++;
+      k = 'c';
+      if(action == 'w'){
+        k = 'd';
+      }
+      setTable(table, numFramesInUse, page, offset, 'v', 0, k);
+      numFramesInUse++;
+    }
+    else{
+      k = table[0][3];
+      j = 0;
+      for(i = 1; i < numFrames; i++){
+        printf("k: %d VS table[%d][3]: %d\n", k, i, table[i][3]);
+        if(table[i][3] > k){
+          k = table[i][3];
+          j = i;
+        }
+      }
+      if(table[j][4] == 'd'){
+
+      }
+      pt[page] = offset;
+      pageFaults++;
+      k = 'c';
+      if(action == 'w'){
+        k = 'd';
+      }
+      setTable(table, j, page, offset, 'v', 0, k);
+    }
+    age(table);
+  }
+}
+
 // void fifo(unsigned int arr[], )
 
 int main(int argc, char **argv){
@@ -69,39 +166,36 @@ int main(int argc, char **argv){
     char action;
     long logical, physical, temp;
     unsigned int * pageTable;
-    int *** physicalTable; // in/valid checker, LRU/FIFO data
+    int ** physicalTable; // in/valid checker, LRU/FIFO data
     pageTable = malloc(pow(2,20)*sizeof(unsigned int));
-    physicalTable = malloc(numFrames*sizeof(unsigned int));
+    physicalTable = malloc(numFrames*sizeof(int *));
     for(i = 0; i < numFrames; i++){
-      physicalTable[i] = malloc(sizeof(char));
-      for(j = 0; j < 1; j++){
-        physicalTable[i][j] = malloc(sizeof(unsigned int));
-      }
+      physicalTable[i] = malloc(sizeof(int));
     }
+    init(physicalTable);
     scan = scanf("%c%ld\n", &action, &logical);
     while(scan == 2){
       physical = logical & (mask - 1);
       temp = logical;
       logical = logical>>12;
       printf("scan: %d, action: %c, logical: %ld, page: %ld, physical: %ld\n", scan, action, temp, logical, physical);
+      if(algorithm[0] == 'f'){
+        fifo(pageTable, physicalTable, physical, logical, action);
+      }
+      else{
+        printf("LRU\n");
+      }
       scan = scanf("%c %ld\n", &action, &logical);
     }
-    int k;
-    init(physicalTable);
-    for(i = 0; i < numFrames; i++){
-      for(j = 0; j < 1; j++){
-        for(k = 0; k < 1; k++){
-          printf("physicalTable[%d][%d][%d]: %d\n", i, j, k, physicalTable[i][j][k]);
-        }
-      }
-    }
+    printT(physicalTable);
     free(pageTable);
     for(i = 0; i < numFrames; i++){
-      for(j = 0; j < 1; j++){
-        free(physicalTable[i][j]);
+        free(physicalTable[i]);
+        free(swapSpace[i]);
       }
-      free(physicalTable[i]);
-    }
     free(physicalTable);
+    free(swapSpace);
+    printf("Summary\n");
+    printf("Total page faults: %d\n", pageFaults);
     return EXIT_SUCCESS;
 }

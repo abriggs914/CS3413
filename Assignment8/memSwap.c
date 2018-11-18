@@ -3,6 +3,7 @@
 #include <string.h>
 #include <math.h>
 
+unsigned int pageBits;
 int pageFaults = 0, swapSaves = 0, swapLoads = 0, numFramesInUse = 0;
 char * algorithm;
 int numFrames;
@@ -21,6 +22,7 @@ void printT(int ** table){
     printf("valid / invalid: %c\n", table[i][2]);
     printf("age:\t\t %d\n", table[i][3]);
     printf("clean / dirty:   %c\n", table[i][4]);
+    printf("action:\t\t %c\n", ((table[i][5]==0)?'-':table[i][5]));
     if(i < numFrames-1){
       printf("\n");
     }
@@ -30,9 +32,11 @@ void printT(int ** table){
 
 void init(int ** table){
   int i, j;
-  swapSpace = malloc(numFrames*sizeof(unsigned int *));
-  for(i = 0; i < numFrames; i++){
+  swapSpace = malloc(pageBits*sizeof(unsigned int *));
+  for(i = 0; i < pageBits; i++){
     swapSpace[i] = malloc(sizeof(int));
+  }
+  for(i = 0; i < numFrames; i++){
     for(j = 0; j < 5; j++){
       if(j == 2){
         table[i][j] = 'i';
@@ -99,27 +103,49 @@ bool exists(int ** table, long page){
   return false;
 }
 
-void setTable(int ** table, int index, long page, long offset, int stat, int count, int cORd){
+bool isInSwapSpace(long page, long offset, char action){
+  int i;
+  for(i = 0; i < numFrames; i++){
+    if(swapSpace[page][1] == 'v'){
+      printf("Exists in swapspace: swapSpace[%d][0]: \n", swapSpace[i][0]);
+      return true;
+    }
+  }
+  printf("Doesn't exist in swapspace: swapSpace[%ld][0]: page: \n", page);
+  return false;
+}
+
+void setTable(int ** table, int index, long page, long offset, int stat, int count, int cORd, char action){
   table[index][0] = page;
   table[index][1] = offset;
   table[index][2] = stat;
   table[index][3] = count;
   table[index][4] = cORd;
+  table[index][5] = action;
 }
 
-void fifo(unsigned int * pt, int ** table, long offset, long page, char action){
+void setPageTable(int ** pt, long page, long offset){
+  if(pt[page][1] == 'i'){ // page table entry is empty
+    pt[page][0] = offset;
+    pt[page][1] = 'v';
+    return;
+  }
+  pt[page][0] = offset;
+}
+
+void fifo(int ** pt, int ** table, long offset, long page, char action){
   printf("FIFO\n");
     int i, j, k;
   // not all frames are in use
   if(!exists(table, page)){
     if(numFramesInUse < numFrames){
-      pt[page] = offset;
+      setPageTable(pt, page, offset);
       pageFaults++;
       k = 'c';
       if(action == 'w'){
         k = 'd';
       }
-      setTable(table, numFramesInUse, page, offset, 'v', 0, k);
+      setTable(table, numFramesInUse, page, offset, 'v', 0, k, action);
       numFramesInUse++;
     }
     else{
@@ -133,17 +159,24 @@ void fifo(unsigned int * pt, int ** table, long offset, long page, char action){
         }
       }
       if(table[j][4] == 'd'){
-
+        swapSpace[page][0] = offset;
+        swapSpace[page][1] = 'v';
+        printf("swapSpace[%d][0]: %d\n", page, swapSpace[page][0]);
+        printf("swapSpace[%d][1]: %d\n", page, swapSpace[page][1]);
       }
-      pt[page] = offset;
+      setPageTable(pt, page, offset);
       pageFaults++;
       k = 'c';
       if(action == 'w'){
         k = 'd';
       }
-      setTable(table, j, page, offset, 'v', 0, k);
+      setTable(table, j, page, offset, 'v', 0, k, action);
     }
     age(table);
+  }
+  else if(isInSwapSpace(page, offset, action)){
+    age(table);
+    /*do stuff*/
   }
 }
 
@@ -151,12 +184,13 @@ void fifo(unsigned int * pt, int ** table, long offset, long page, char action){
 
 int main(int argc, char **argv){
     // early fail condition
+    pageBits = pow(2,20);
     if(argc < 3 || argc > 4){
         printf("Usage: ./memSwap # -(one of; -f, -l) < fileName.txt (optional)\n");
         return EXIT_FAILURE;
     }
     // logic check fail condition
-    if(!decipher(argv) || numFrames < 1 || numFrames > pow(2,20)){
+    if(!decipher(argv) || numFrames < 1 || numFrames > pageBits){
       printf("Adjust numFrames or algorithm.\nUsage: ./memSwap # -(one of; -f, -l) < fileName.txt (optional)\n");
       return EXIT_FAILURE;
     }
@@ -165,10 +199,12 @@ int main(int argc, char **argv){
     int scan, i, j, mask = pow(2,12);
     char action;
     long logical, physical, temp;
-    unsigned int * pageTable;
-    int ** physicalTable; // in/valid checker, LRU/FIFO data
-    pageTable = malloc(pow(2,20)*sizeof(unsigned int));
+    int ** physicalTable, ** pageTable; // in/valid checker, LRU/FIFO data, pageTable with in/valid data
+    pageTable = malloc(pageBits*sizeof(unsigned int *));
     physicalTable = malloc(numFrames*sizeof(int *));
+    for(i = 0; i < pageBits; i++){
+      pageTable[i] = malloc(sizeof(unsigned int));
+    }
     for(i = 0; i < numFrames; i++){
       physicalTable[i] = malloc(sizeof(int));
     }
@@ -188,11 +224,17 @@ int main(int argc, char **argv){
       scan = scanf("%c %ld\n", &action, &logical);
     }
     printT(physicalTable);
+    for(i = 0; i < pageBits; i++){
+      if(pageTable[i][1] == 'v'){
+        printf("pageTable[%d][0]: %u, pageTable[%d][0]: %u\n", i, pageTable[i][0], i, pageTable[i][1]);
+      }
+      free(pageTable[i]);
+    }
     free(pageTable);
     for(i = 0; i < numFrames; i++){
         free(physicalTable[i]);
         free(swapSpace[i]);
-      }
+    }
     free(physicalTable);
     free(swapSpace);
     printf("Summary\n");

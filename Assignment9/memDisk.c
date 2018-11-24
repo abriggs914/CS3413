@@ -13,11 +13,28 @@ typedef struct request{
 
 int head;
 int time;
+int requestInQueue;
 char *algorithm;
 
 struct request *front;
 
+void printReq(struct request * req){
+    printf("Request: sector: %d, arrival: %u\n", req->sector, req->arrival);
+}
+
+void printReqList(){
+    struct request * temp = front;
+    printf("\tLIST<\n");
+    while(temp != NULL){
+        printReq(temp);
+        temp = temp->next;
+    }
+    printf("\t>LIST\n");
+}
+
 void init(char *arr[]){
+    time = 0;
+    requestInQueue = 0;
     head = atoi(arr[2]);
     if(arr[1][0] == 'F'){
         algorithm = "First Come First Serve";
@@ -43,13 +60,44 @@ void enqueue(int s, unsigned int t){
     struct request * tmp = front;
     if(tmp == NULL){
         front = temp;
+        requestInQueue++;
     }
     else{
+        printf("else\n");
+        int c = 0;
         while(tmp->next != NULL){
-            temp = temp->next;
+            printf("%d\n",c);
+            c++;
+            tmp = tmp->next;
         }
         tmp->next = temp;
+        requestInQueue++;
     }
+}
+
+void dequeueReq(struct request * req){
+    struct request * tmp = front;
+    struct request * tmpNext = front;
+    if(front == req){
+        front = front->next;
+        return;
+    }
+    if(tmp != NULL){
+        tmpNext = tmp->next;
+    }
+    else{
+        tmp = NULL;
+        return;
+    }
+    while(tmpNext != req && tmpNext != NULL){
+        tmp = tmpNext;
+        tmpNext = tmpNext->next;
+    }
+    if(tmpNext == NULL){
+        printf("HI\n");
+    }
+    printf("GOTHERE\n");
+    tmp->next = tmpNext->next;
 }
 
 int main(int argc, char **argv){
@@ -63,7 +111,6 @@ int main(int argc, char **argv){
         printf("Usage: ./memDisk (one of: F T C L)\n");
         return EXIT_FAILURE;
     }
-    time = 0;
     bool timePass = true;
     int sectorIn, i;
     unsigned int timeIn;
@@ -79,9 +126,16 @@ int main(int argc, char **argv){
             enqueue(sectorIn, timeIn);
             i = scanf("%d %u", &sectorIn, &timeIn);
         }
-        if ((i != 2 && front == NULL) || time > 50){ // nothing read in
+        if ((i != 2 && front == NULL) || time > 5){ // nothing read in
             timePass = false;
         }
         time++;
     }
+    printReqList();
+    dequeueReq(front);
+    printReqList();
+    dequeueReq(front);
+    printReqList();
+    dequeueReq(front->next->next);
+    printReqList();
 }

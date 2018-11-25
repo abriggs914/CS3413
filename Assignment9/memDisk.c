@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <math.h>
 
 typedef int bool;
 #define true 1
@@ -12,7 +13,7 @@ typedef struct request{
 };
 
 int head;
-int time;
+double time;
 int requestInQueue;
 char * algorithm;
 bool directionFroward = true;
@@ -24,10 +25,10 @@ void printReqList();
 void init(char * arr[]);
 void enqueue(int s, unsigned int t);
 void dequeueReq(struct request * req);
-void fcfs();
-void sstf();
-void cscan();
-void look();
+double fcfs();
+double sstf();
+double cscan();
+double look();
 void service();
 
 void printReq(struct request * req){
@@ -106,18 +107,36 @@ void dequeueReq(struct request * req){
     requestInQueue--;
 }
 
-void fcfs(){
-    printf("\nHEY\n");
+double timeAdjust(int dest){
+    int dist = abs(dest) - head;
+    double t = ((double)abs(dist)/(double)10);
+    if(dist < 0 && directionFroward){
+        t += 5;
+    }
+    else if(dist >= 0 && !directionFroward){
+        t += 5;
+    }
+    printf("\tt: %f\n", t);
+    return t;
+}
+
+double fcfs(){
+    double t = timeAdjust(-1);
+    printf("HEY\n");
+    return t;
 }
 
 void service(){
     printf("\nHEY\n");
+    double t;
     if(algorithm[0] == 'F'){
-        fcfs();
+        t = fcfs();
     }
     else if(algorithm[0] == 'S'){
-        fcfs();
+        t = fcfs();
     }
+    time += t;
+    head = front->sector;
 }
 
 int main(int argc, char ** argv){
@@ -140,7 +159,7 @@ int main(int argc, char ** argv){
         timePass = false;
     }
     while(timePass){
-        printf("Time: %d\n", time);
+        printf("Time: %f\n", time);
         if(i == 2){ // read something to enqueue
             printf("sectorIn: %d, timeIn: %u\n", sectorIn, timeIn);
             enqueue(sectorIn, timeIn);
@@ -149,10 +168,10 @@ int main(int argc, char ** argv){
         if(front != NULL){
             service();
         }
-        if ((i != 2 && front == NULL) || time > 5){ // nothing read in
+        if ((i != 2 && front == NULL) || time > 70){ // nothing read in
             timePass = false;
         }
-        time++;
+        time += 1;
     }
     printReqList();
     dequeueReq(front);

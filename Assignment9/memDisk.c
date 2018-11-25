@@ -13,6 +13,7 @@ typedef struct request{
 };
 
 int head;
+int totalHeadMovement;
 double time;
 int requestInQueue;
 char * algorithm;
@@ -32,23 +33,24 @@ double look();
 void service();
 
 void printReq(struct request * req){
-    printf("Request: sector: %d, arrival: %u\n", req->sector, req->arrival);
+    printf("\tRequest: sector: %d, arrival: %u\n", req->sector, req->arrival);
 }
 
 void printReqList(){
     struct request * temp = front;
-    printf("\tLIST<\n");
+    printf("\t\tLIST<\n");
     while(temp != NULL){
         printReq(temp);
         temp = temp->next;
     }
-    printf("\t>LIST\n");
+    printf("\t\t>LIST\n");
 }
 
 void init(char * arr[]){
     time = 0;
     requestInQueue = 0;
     head = atoi(arr[2]);
+    totalHeadMovement = 0;
     if(arr[1][0] == 'F'){
         algorithm = "First Come First Serve";
     }
@@ -107,7 +109,7 @@ void dequeueReq(struct request * req){
     requestInQueue--;
 }
 
-double timeAdjust(int dest){
+double timeAdjust(int dest, bool adjust){
     int dist = abs(dest) - head;
     double t = ((double)abs(dist)/(double)10);
     if(dist < 0 && directionFroward){
@@ -116,27 +118,62 @@ double timeAdjust(int dest){
     else if(dist >= 0 && !directionFroward){
         t += 5;
     }
-    printf("\tt: %f\n", t);
+    printf("t: %f, hm: %d, dest: %d\n", t, totalHeadMovement, dest);
+    if(adjust){
+        totalHeadMovement += abs(dist);
+    }
     return t;
 }
 
 double fcfs(){
-    double t = timeAdjust(-1);
-    printf("HEY\n");
+    double t = timeAdjust(front->sector, true);
+    return t;
+}
+
+double sstf(){
+    struct request * shortestTarget = front;
+    struct request * temp = front;
+    struct request * temp2 = malloc(sizeof(struct request *));
+    int shortestSeekTime = timeAdjust(front->sector, false);
+    double t;
+    while(temp->next != NULL){
+        temp = temp->next;
+        t = timeAdjust(temp->sector, false);
+        if(temp->arrival <= time && (shortestSeekTime > t)){
+            shortestTarget = temp;
+            shortestSeekTime = abs(temp->sector - head);
+        }
+        printf("arrival: %d, time: %f, shT->arrival: %d\n",temp->arrival, time, shortestTarget->arrival);
+    }
+    temp = front;
+    if(temp != shortestTarget){
+        while(temp->next != shortestTarget){
+            temp = temp->next;
+        }
+        temp2 = shortestTarget;
+        temp->next = shortestTarget->next;
+        printf("GOTHERE\n");
+        temp2->next = front;
+        printReqList();
+        front = shortestTarget;
+        printReqList();
+    }    
+    timeAdjust(front->sector, true);
+    free(temp2);
     return t;
 }
 
 void service(){
-    printf("\nHEY\n");
     double t;
     if(algorithm[0] == 'F'){
         t = fcfs();
     }
     else if(algorithm[0] == 'S'){
-        t = fcfs();
+        t = sstf();
     }
     time += t;
     head = front->sector;
+    dequeueReq(front);
 }
 
 int main(int argc, char ** argv){
@@ -159,25 +196,29 @@ int main(int argc, char ** argv){
         timePass = false;
     }
     while(timePass){
-        printf("Time: %f\n", time);
+        printf("Time: %f, Head: %d\n", time, head);
         if(i == 2){ // read something to enqueue
             printf("sectorIn: %d, timeIn: %u\n", sectorIn, timeIn);
             enqueue(sectorIn, timeIn);
             i = scanf("%d %u", &sectorIn, &timeIn);
         }
-        if(front != NULL){
+        if(front != NULL && front->arrival <= time){ // something queued and it is ready to be serviced
+            printReqList();
             service();
         }
-        if ((i != 2 && front == NULL) || time > 70){ // nothing read in
+        else if(front == NULL || (i != 2 && front->arrival > time)){ // nothing queued or (nothing read in and head arrriavl is > time)
+            time += 1;
+        }
+        if(front == NULL && i != 2){ // nothing queued and nothing read in
             timePass = false;
         }
-        time += 1;
     }
-    printReqList();
-    dequeueReq(front);
-    printReqList();
-    dequeueReq(front);
-    printReqList();
-    dequeueReq(front->next->next);
-    printReqList();
+    // printReqList();
+    // dequeueReq(front);
+    // printReqList();
+    // dequeueReq(front);
+    // printReqList();
+    // dequeueReq(front->next->next);
+    printf("Total Head Movements required: %d\n", totalHeadMovement);
+    printf("Total time: %f\n", time);
 }

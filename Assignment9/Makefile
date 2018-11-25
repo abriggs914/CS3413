@@ -7,5 +7,8 @@ memDisk : memDisk.c
 test1 : memDisk test1.txt
 	./memDisk T 53 < test1.txt
 
+test2 : memDisk test2.txt
+	./memDisk T 53 < test2.txt
+
 clean : 
 	rm memDisk

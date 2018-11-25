@@ -14,9 +14,21 @@ typedef struct request{
 int head;
 int time;
 int requestInQueue;
-char *algorithm;
+char * algorithm;
+bool directionFroward = true;
 
-struct request *front;
+struct request * front;
+
+void printReq(struct request * req);
+void printReqList();
+void init(char * arr[]);
+void enqueue(int s, unsigned int t);
+void dequeueReq(struct request * req);
+void fcfs();
+void sstf();
+void cscan();
+void look();
+void service();
 
 void printReq(struct request * req){
     printf("Request: sector: %d, arrival: %u\n", req->sector, req->arrival);
@@ -32,7 +44,7 @@ void printReqList(){
     printf("\t>LIST\n");
 }
 
-void init(char *arr[]){
+void init(char * arr[]){
     time = 0;
     requestInQueue = 0;
     head = atoi(arr[2]);
@@ -63,11 +75,7 @@ void enqueue(int s, unsigned int t){
         requestInQueue++;
     }
     else{
-        printf("else\n");
-        int c = 0;
         while(tmp->next != NULL){
-            printf("%d\n",c);
-            c++;
             tmp = tmp->next;
         }
         tmp->next = temp;
@@ -80,6 +88,7 @@ void dequeueReq(struct request * req){
     struct request * tmpNext = front;
     if(front == req){
         front = front->next;
+        requestInQueue--;
         return;
     }
     if(tmp != NULL){
@@ -93,14 +102,25 @@ void dequeueReq(struct request * req){
         tmp = tmpNext;
         tmpNext = tmpNext->next;
     }
-    if(tmpNext == NULL){
-        printf("HI\n");
-    }
-    printf("GOTHERE\n");
     tmp->next = tmpNext->next;
+    requestInQueue--;
 }
 
-int main(int argc, char **argv){
+void fcfs(){
+    printf("\nHEY\n");
+}
+
+void service(){
+    printf("\nHEY\n");
+    if(algorithm[0] == 'F'){
+        fcfs();
+    }
+    else if(algorithm[0] == 'S'){
+        fcfs();
+    }
+}
+
+int main(int argc, char ** argv){
     printf("main\n");
     if(argc > 4 || argc < 3){
         printf("Usage: ./memDisk (one of: F T C L)\n");
@@ -120,11 +140,14 @@ int main(int argc, char **argv){
         timePass = false;
     }
     while(timePass){
-        printf("time: %d\n", time);
+        printf("Time: %d\n", time);
         if(i == 2){ // read something to enqueue
             printf("sectorIn: %d, timeIn: %u\n", sectorIn, timeIn);
             enqueue(sectorIn, timeIn);
             i = scanf("%d %u", &sectorIn, &timeIn);
+        }
+        if(front != NULL){
+            service();
         }
         if ((i != 2 && front == NULL) || time > 5){ // nothing read in
             timePass = false;

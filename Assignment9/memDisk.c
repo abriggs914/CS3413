@@ -110,17 +110,18 @@ void dequeueReq(struct request * req){
 }
 
 double timeAdjust(int dest, bool adjust){
-    int dist = abs(dest) - head;
-    double t = ((double)abs(dist)/(double)10);
-    if(dist < 0 && directionFroward){
-        t += 5;
+    int dist = abs(dest - head);
+    if(dist > 500){
+        dist = 1000 - dist;
     }
-    else if(dist >= 0 && !directionFroward){
+    double t = ((double)abs(dist)/(double)10);
+    if((dest < head && directionFroward) || (dest > head && !directionFroward)){
         t += 5;
+        directionFroward = !directionFroward;
     }
     printf("t: %f, hm: %d, dest: %d\n", t, totalHeadMovement, dest);
     if(adjust){
-        totalHeadMovement += abs(dist);
+        totalHeadMovement += dist;
     }
     return t;
 }
@@ -133,7 +134,7 @@ double fcfs(){
 double sstf(){
     struct request * shortestTarget = front;
     struct request * temp = front;
-    struct request * temp2 = malloc(sizeof(struct request *));
+    struct request * temp2; // = malloc(sizeof(struct request *));
     int shortestSeekTime = timeAdjust(front->sector, false);
     double t;
     while(temp->next != NULL){
@@ -141,9 +142,9 @@ double sstf(){
         t = timeAdjust(temp->sector, false);
         if(temp->arrival <= time && (shortestSeekTime > t)){
             shortestTarget = temp;
-            shortestSeekTime = abs(temp->sector - head);
+            shortestSeekTime = t; //abs(temp->sector - head);
         }
-        printf("arrival: %d, time: %f, shT->arrival: %d\n",temp->arrival, time, shortestTarget->arrival);
+        // printf("arrival: %d, time: %f, curr t: %f, shT->sector: %d, shT->arrival: %d\n",temp->arrival, time, t, shortestTarget->sector, shortestTarget->arrival);
     }
     temp = front;
     if(temp != shortestTarget){
@@ -152,14 +153,50 @@ double sstf(){
         }
         temp2 = shortestTarget;
         temp->next = shortestTarget->next;
-        printf("GOTHERE\n");
         temp2->next = front;
-        printReqList();
+        // printReqList();
+        // printReq(shortestTarget);
         front = shortestTarget;
-        printReqList();
+        // printReqList();
     }    
     timeAdjust(front->sector, true);
-    free(temp2);
+    return t;
+}
+
+double cscan(){
+    double t;
+    struct request * temp = front;
+    struct request * ShortestTarget = front;
+    int dist;
+    int shortestDist;
+    shortestDist = 1000;
+    printf("directionForward: %s\n", ((directionFroward)?"true":"false"));
+    while(temp != NULL){
+        dist = abs(temp->sector - head);
+        // if(dist > 500){
+        //     dist = 1000 - dist;
+        // }
+        printf("dist: %d, shortestDist: %d, temp->sector: %d\n", dist, shortestDist, ShortestTarget->sector);
+        if(temp->arrival <= time){
+            if(directionFroward && temp->sector > head && dist < shortestDist){
+                ShortestTarget = temp;
+                shortestDist = dist;
+            }
+            else if(!directionFroward && temp->sector < head && dist < shortestDist){
+                ShortestTarget = temp;
+                shortestDist = dist;
+            }
+        }
+        temp = temp->next;
+    }
+    dequeueReq(ShortestTarget);
+    printReq(ShortestTarget);
+    temp = front;
+    ShortestTarget->next = temp;
+    front = ShortestTarget;
+    printf("CSCNA");
+    printReqList();
+    t = timeAdjust(front->sector, true);
     return t;
 }
 
@@ -170,6 +207,9 @@ void service(){
     }
     else if(algorithm[0] == 'S'){
         t = sstf();
+    }
+    else if(algorithm[0] == 'C'){
+        t = cscan();
     }
     time += t;
     head = front->sector;
@@ -196,19 +236,19 @@ int main(int argc, char ** argv){
         timePass = false;
     }
     while(timePass){
-        printf("Time: %f, Head: %d\n", time, head);
         if(i == 2){ // read something to enqueue
             printf("sectorIn: %d, timeIn: %u\n", sectorIn, timeIn);
             enqueue(sectorIn, timeIn);
             i = scanf("%d %u", &sectorIn, &timeIn);
         }
-        if(front != NULL && front->arrival <= time){ // something queued and it is ready to be serviced
+        if(front != NULL && front->arrival <= time && i != 2){ // something queued and it is ready to be serviced
             printReqList();
             service();
         }
         else if(front == NULL || (i != 2 && front->arrival > time)){ // nothing queued or (nothing read in and head arrriavl is > time)
             time += 1;
         }
+        printf("Time: %f, Head: %d\n", time, head);
         if(front == NULL && i != 2){ // nothing queued and nothing read in
             timePass = false;
         }

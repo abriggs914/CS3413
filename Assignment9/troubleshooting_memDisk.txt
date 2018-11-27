@@ -1,0 +1,3 @@
+Input:
+    Requests are expected to be in chronilogical order. Sector input 
+    should be between 0-999. Time may be between 0-2^32.

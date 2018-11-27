@@ -1,3 +1,20 @@
+/*
+*   CS3413 Assignment 9
+*   Nov 2018
+*   Avery Briggs
+*   3471065
+*
+*   C program to simulate the disk rotation and request 
+*   servicing over time. Program uses one of four algorithms
+*   to simulate execution; FCFS, SSTF, CSCAN and, LOOK.
+*   Program outputs the total disk reader movements, and 
+*   time it took to service all requests. Command line input
+*   must be ./memDisk (one of: F T C L) # < fileName.txt (optional).
+*   Requests are expected to be in chronilogical order.
+*   Sector input should be between 0-999. Time may be
+*    between 0-2^32.
+*/
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
@@ -6,36 +23,29 @@ typedef int bool;
 #define true 1
 #define false 0
 
+// Struct to represent a request
+// sector   - where the request needs to be serviced
+// arrival  - the earliest time the request can be services
+// next     - points to the next request in queue
 typedef struct request{
     int sector;
     unsigned int arrival;
     struct request *next;
 };
 
-int head;
-int totalHeadMovement;
-double time;
-int requestInQueue;
-char * algorithm;
-bool directionFroward = true;
-
+int head; // location of disk head reader
+int totalHeadMovement; // running total of disk movements
+double time; // running time
+char * algorithm; // user selected algorithm
+bool directionFroward = true; // indicates the direction of disk rotation. true == counterclockwise
 struct request * front;
 
-void printReq(struct request * req);
-void printReqList();
-void init(char * arr[]);
-void enqueue(int s, unsigned int t);
-void dequeueReq(struct request * req);
-double fcfs();
-double sstf();
-double cscan();
-double look();
-void service();
-
+// Function prints the attributes of a paramertized request
 void printReq(struct request * req){
-    printf("\tRequest: sector: %d, arrival: %u\n", req->sector, req->arrival);
+    printf("\tRequest: Go to sector: %d, arrived at time: %u\n", req->sector, req->arrival);
 }
 
+// Function prints the list of requests
 void printReqList(){
     struct request * temp = front;
     printf("\t\tLIST<\n");
@@ -46,9 +56,11 @@ void printReqList(){
     printf("\t\t>LIST\n");
 }
 
+// Function is called at the beginning of exection
+// to assign values to head and algorithm. It also
+// initializes time and totalHeadMovements to 0.
 void init(char * arr[]){
     time = 0;
-    requestInQueue = 0;
     head = atoi(arr[2]);
     totalHeadMovement = 0;
     if(arr[1][0] == 'F'){
@@ -68,6 +80,9 @@ void init(char * arr[]){
     }
 }
 
+
+// Function creates a new request node for the linked
+// list, and queues it.
 void enqueue(int s, unsigned int t){
     struct request * temp = (struct request *) malloc(sizeof(struct request));
     temp->sector = s;
@@ -75,23 +90,22 @@ void enqueue(int s, unsigned int t){
     struct request * tmp = front;
     if(tmp == NULL){
         front = temp;
-        requestInQueue++;
     }
     else{
         while(tmp->next != NULL){
             tmp = tmp->next;
         }
         tmp->next = temp;
-        requestInQueue++;
     }
 }
 
+// Function removes the paramertized request from
+// the list of requests.
 void dequeueReq(struct request * req){
     struct request * tmp = front;
     struct request * tmpNext = front;
     if(front == req){
         front = front->next;
-        requestInQueue--;
         return;
     }
     if(tmp != NULL){
@@ -106,9 +120,30 @@ void dequeueReq(struct request * req){
         tmpNext = tmpNext->next;
     }
     tmp->next = tmpNext->next;
-    requestInQueue--;
 }
 
+// Function deciides whether to change the direction of
+// the disk. Only called by look to allow it to turn
+// around before hitting the boundry.
+bool switchDirection(){
+    struct request * temp = front;
+    while(temp != NULL){
+        if(directionFroward && temp->sector > head){
+            return false;
+        }
+        else if(!directionFroward && temp->sector < head){
+            return false;
+        }
+        temp = temp->next;
+    }
+    return true;
+}
+
+// Function is called to calculate the time it will
+// take to service a request. It will add 5 s to the
+// time if the shortest route will involve changing
+// it's rotation. It also adjusts the totalHeadMovements
+// based on the distance form the head to the sector.
 double timeAdjust(int dest, bool adjust){
     int dist = abs(dest - head);
     if(dist > 500){
@@ -119,22 +154,28 @@ double timeAdjust(int dest, bool adjust){
         t += 5;
         directionFroward = !directionFroward;
     }
-    printf("t: %f, hm: %d, dest: %d\n", t, totalHeadMovement, dest);
     if(adjust){
         totalHeadMovement += dist;
     }
     return t;
 }
 
+// Function implements the CSCAN algorithm.
+// It returns a double of how much time it
+// will take to service the request.
 double fcfs(){
     double t = timeAdjust(front->sector, true);
     return t;
 }
 
+// Function implements the SSTF algorithm.
+// It selects a new front request, and returns
+// a double of how much time it will take to 
+// service the request.
 double sstf(){
     struct request * shortestTarget = front;
     struct request * temp = front;
-    struct request * temp2; // = malloc(sizeof(struct request *));
+    struct request * temp2;
     int shortestSeekTime = timeAdjust(front->sector, false);
     double t;
     while(temp->next != NULL){
@@ -142,9 +183,8 @@ double sstf(){
         t = timeAdjust(temp->sector, false);
         if(temp->arrival <= time && (shortestSeekTime > t)){
             shortestTarget = temp;
-            shortestSeekTime = t; //abs(temp->sector - head);
+            shortestSeekTime = t;
         }
-        // printf("arrival: %d, time: %f, curr t: %f, shT->sector: %d, shT->arrival: %d\n",temp->arrival, time, t, shortestTarget->sector, shortestTarget->arrival);
     }
     temp = front;
     if(temp != shortestTarget){
@@ -154,29 +194,69 @@ double sstf(){
         temp2 = shortestTarget;
         temp->next = shortestTarget->next;
         temp2->next = front;
-        // printReqList();
-        // printReq(shortestTarget);
         front = shortestTarget;
-        // printReqList();
     }    
     timeAdjust(front->sector, true);
     return t;
 }
 
+// Function implements the CSCAN algorithm.
+// It selects a new front request, and returns
+// a double of how much time it will take to 
+// service the request.
 double cscan(){
+    double t, leftOver = 0;
+    struct request * temp = front;
+    struct request * ShortestTarget = front;
+    int dist;
+    int shortestDist;
+    bool pass = true;
+    shortestDist = 1000;
+    directionFroward = true;
+    while(temp != NULL){
+        dist = abs(temp->sector - head);
+        if(temp->sector < head){
+            dist += 999-head;
+        }
+        if(temp->arrival <= time){
+            if(directionFroward && temp->sector > head && dist < shortestDist){
+                ShortestTarget = temp;
+                shortestDist = dist;
+                pass = false;
+            }
+        }
+        temp = temp->next;
+        if(pass && temp == NULL){
+            leftOver += timeAdjust(1000, false);
+            temp = front;
+            head = 0;
+        }
+    }
+    dequeueReq(ShortestTarget);
+    temp = front;
+    ShortestTarget->next = temp;
+    front = ShortestTarget;
+    t = timeAdjust(front->sector, true);
+    t += leftOver;
+    return t;
+}
+
+// Function implements the LOOK algorithm.
+// It selects a new front request, and returns
+// a double of how much time it will take to 
+// service the request.
+double look(){
     double t;
     struct request * temp = front;
     struct request * ShortestTarget = front;
     int dist;
     int shortestDist;
     shortestDist = 1000;
-    printf("directionForward: %s\n", ((directionFroward)?"true":"false"));
     while(temp != NULL){
         dist = abs(temp->sector - head);
-        // if(dist > 500){
-        //     dist = 1000 - dist;
-        // }
-        printf("dist: %d, shortestDist: %d, temp->sector: %d\n", dist, shortestDist, ShortestTarget->sector);
+        if(switchDirection()){
+            directionFroward = !directionFroward;
+        }
         if(temp->arrival <= time){
             if(directionFroward && temp->sector > head && dist < shortestDist){
                 ShortestTarget = temp;
@@ -190,16 +270,21 @@ double cscan(){
         temp = temp->next;
     }
     dequeueReq(ShortestTarget);
-    printReq(ShortestTarget);
     temp = front;
     ShortestTarget->next = temp;
     front = ShortestTarget;
-    printf("CSCNA");
-    printReqList();
     t = timeAdjust(front->sector, true);
     return t;
 }
 
+// Function service is called iteratively from main
+// to constantly select the best and most up to date 
+// request. Each algorithm will sort the list of 
+// requests, putting the selected candidate in the
+// front of the list. Then updating the time with 
+// the returned service time, and head with the new
+// sector. Finally it deQueues the request leaving
+// behind only the unserviced requests.
 void service(){
     double t;
     if(algorithm[0] == 'F'){
@@ -211,6 +296,9 @@ void service(){
     else if(algorithm[0] == 'C'){
         t = cscan();
     }
+    else{
+        t = look();
+    }
     time += t;
     head = front->sector;
     dequeueReq(front);
@@ -219,15 +307,15 @@ void service(){
 int main(int argc, char ** argv){
     printf("main\n");
     if(argc > 4 || argc < 3){
-        printf("Usage: ./memDisk (one of: F T C L)\n");
+        printf("Usage: ./memDisk (one of: F T C L) # < fileName.txt (optional)\n");
         return EXIT_FAILURE;
     }
     init(argv);
     if(algorithm == "UNDEFINED"){
-        printf("Usage: ./memDisk (one of: F T C L)\n");
+        printf("Usage: ./memDisk (one of: F T C L) # < fileName.txt (optional)\n");
         return EXIT_FAILURE;
     }
-    bool timePass = true;
+    bool timePass = true, begin = true;
     int sectorIn, i;
     unsigned int timeIn;
     printf("head: %d, algorithm: %s\n", head, algorithm);
@@ -237,28 +325,29 @@ int main(int argc, char ** argv){
     }
     while(timePass){
         if(i == 2){ // read something to enqueue
-            printf("sectorIn: %d, timeIn: %u\n", sectorIn, timeIn);
+            printf("Request In: sector: %d, time: %u\n", sectorIn, timeIn);
             enqueue(sectorIn, timeIn);
             i = scanf("%d %u", &sectorIn, &timeIn);
         }
-        if(front != NULL && front->arrival <= time && i != 2){ // something queued and it is ready to be serviced
-            printReqList();
+        // something queued and it is ready to be serviced
+        if(front != NULL && front->arrival <= time && i != 2){
+            if(begin){
+                printReqList();
+                begin = false;
+            }
             service();
         }
-        else if(front == NULL || (i != 2 && front->arrival > time)){ // nothing queued or (nothing read in and head arrriavl is > time)
+        // nothing queued or nothing read in and waiting to service first request
+        else if(front == NULL || (i != 2 && front->arrival > time)){
             time += 1;
         }
-        printf("Time: %f, Head: %d\n", time, head);
-        if(front == NULL && i != 2){ // nothing queued and nothing read in
+        printf("Time: %.1f s, Head: %d\n", time, head);
+        // nothing queued and nothing read in
+        if(front == NULL && i != 2){
             timePass = false;
         }
     }
-    // printReqList();
-    // dequeueReq(front);
-    // printReqList();
-    // dequeueReq(front);
-    // printReqList();
-    // dequeueReq(front->next->next);
+    printf("\n\tSUMMARY\n");
     printf("Total Head Movements required: %d\n", totalHeadMovement);
     printf("Total time: %f\n", time);
 }

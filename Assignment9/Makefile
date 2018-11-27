@@ -16,5 +16,8 @@ test3 : memDisk test3.txt
 test4 : memDisk test3.txt
 	./memDisk C 999 < test3.txt
 
+test5 : memDisk test3.txt
+	./memDisk L 53 < test3.txt
+
 clean : 
 	rm memDisk

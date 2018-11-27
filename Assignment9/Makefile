@@ -11,12 +11,21 @@ test2 : memDisk test2.txt
 	./memDisk T 53 < test2.txt
 
 test3 : memDisk test3.txt
-	./memDisk T 53 < test3.txt
+	./memDisk T 990 < test3.txt
 
 test4 : memDisk test3.txt
 	./memDisk C 999 < test3.txt
 
 test5 : memDisk test3.txt
+	./memDisk F 53 < test3.txt
+
+test6 : memDisk test3.txt
+	./memDisk T 53 < test3.txt
+
+test6 : memDisk test3.txt
+	./memDisk C 53 < test3.txt
+
+test6 : memDisk test3.txt
 	./memDisk L 53 < test3.txt
 
 clean : 
